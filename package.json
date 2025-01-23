@@ -1,0 +1,19 @@
+{
+  "name": "shopsage-seniordesignproject",
+  "version": "1.0.0",
+  "description": "Create a budgeting app that generates a shopping list that maximises cost savings based on user preference.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "private": true,
+  "author": "",
+  "license": "ISC",
+  "workspaces": ["apps/*", "shared/*"],
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3"
+  }
+}
