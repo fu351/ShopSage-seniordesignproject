@@ -2,11 +2,11 @@
 Create a budgeting app that generates a shopping list that maximises cost savings based on user preference.
 
 # Commands
-
 pnpm install
 pnpm build
-
-
+pnpm start:frontend
+pnpm start:backend
+pnpm start:all
 
 # Frontend
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
