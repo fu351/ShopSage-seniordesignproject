@@ -63,6 +63,14 @@ jobs:
       #   with:
       #     path: ./out
 
+      # Upload Artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next
+          retention-days: 7
+
   # Deployment job
   #  deploy:
   #    environment:
