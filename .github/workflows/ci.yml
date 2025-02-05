@@ -35,6 +35,12 @@ jobs:
         with:
           version: 9.15.4
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          
       # Install Dependencies
       - name: Install dependencies
         run: pnpm install
