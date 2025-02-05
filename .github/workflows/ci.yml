@@ -67,8 +67,8 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nextjs-build
-          path: out
+          name: next-build-artifacts
+          path: apps/frontend/.next
           retention-days: 7
 
   # Deployment job
