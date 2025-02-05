@@ -47,7 +47,16 @@ jobs:
       # Install Dependencies
       - name: Install dependencies
         run: pnpm install
-        
+      
+      # Cache Next Build
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: apps/frontend/build
+          key: ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-next-
+          
       # Build App
       - name: Build with Next.js
         run: pnpm run build
