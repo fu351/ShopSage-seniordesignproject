@@ -37,9 +37,7 @@ jobs:
       
       # Find pnpm cache directory
       - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
   
       # Restore pnpm cache
         - name: Setup pnpm cache
