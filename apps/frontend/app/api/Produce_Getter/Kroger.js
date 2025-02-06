@@ -1,11 +1,8 @@
 const axios = require('axios');
-
-
 // Helper function to encode Base64
 function encodeBase64(clientId, clientSecret) {
     return Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 }
-
 // Function to get the Auth Token
 async function getAuthToken() {
     try {
@@ -62,26 +59,18 @@ async function getProducts(brand, searchTerm, locID, authToken) {
     }
 }""
 
-// Main function
-async function main() {
+export async function Krogers(zipCode, searchTerm, locID, authToken) {
     console.log("Starting main execution...");
-
     let authToken = await getAuthToken();
     if (!authToken) {
         console.error("Failed to obtain auth token.");
         return;
     }
-
     let locID = await getLocationId(zipCode);
     if (!locID) {
         console.error("No valid location found.");
         return;
     }
-
     await getProducts(brand, searchTerm, locID, authToken);
     console.log("Finished main execution.");
 }
-
-main().catch(error => {
-    console.error("Unexpected error:", error);
-});
