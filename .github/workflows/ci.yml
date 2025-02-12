@@ -46,6 +46,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       
+      # Run ESLint
+      - name: Run ESLint
+        run: pnpm run lint
+
       # Cache Next Build
       - name: Cache Next.js build
         uses: actions/cache@v4

@@ -1,5 +1,8 @@
-const axios = require('axios');
+import axios from 'axios';
 
+// Add your Kroger API credentials
+const CLIENT_ID = process.env.KROGER_CLIENT_ID;
+const CLIENT_SECRET = process.env.KROGER_CLIENT_SECRET;
 
 // Helper function to encode Base64
 function encodeBase64(clientId, clientSecret) {
@@ -25,11 +28,12 @@ async function getAuthToken() {
         return response.data.access_token;
     } catch (error) {
         console.error("Error fetching auth token:", error);
+        return null;
     }
 }
 
 // Function to get location ID
-async function getLocationId(zipCode) {
+async function getLocationId(zipCode, authToken) {
     try {
         const response = await axios.get(`https://api.kroger.com/v1/locations?filter.zipCode.near=${zipCode}`, {
             headers: {
@@ -39,49 +43,44 @@ async function getLocationId(zipCode) {
         return response.data.data[0].locationId;
     } catch (error) {
         console.error("Error fetching location ID:", error);
+        return null;
     }
 }
 
-// Function to get milk products
-async function getProducts(brand, searchTerm, locID, authToken) {
-    
+// Function to get products
+async function getProducts(brand = '', searchTerm, locationId, authToken) {
     try {
-        const response = await axios.get(`https://api.kroger.com/v1/products?filter.brand=${brand}&filter.term=${searchTerm}&filter.locationId=${locID}`, {
+        const response = await axios.get(`https://api.kroger.com/v1/products?filter.brand=${brand}&filter.term=${searchTerm}&filter.locationId=${locationId}`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        console.log("Milk Products:", response.data);
-        let availableProducts = response.data.data.filter(item => {
-            return item.items.some(subItem => subItem.inventory.stockLevel != "TEMPORARILY_OUT_OF_STOCK");
-        })
+        
+        const availableProducts = response.data.data.filter(item => 
+            item.items.some(subItem => subItem.inventory.stockLevel !== "TEMPORARILY_OUT_OF_STOCK")
+        );
+        
         return availableProducts;
     } catch (error) {
         console.error("Error fetching products:", error);
+        return [];
     }
-}""
-
-// Main function
-async function main() {
-    console.log("Starting main execution...");
-
-    let authToken = await getAuthToken();
-    if (!authToken) {
-        console.error("Failed to obtain auth token.");
-        return;
-    }
-
-    let locID = await getLocationId(zipCode);
-    if (!locID) {
-        console.error("No valid location found.");
-        return;
-    }
-
-    await getProducts(brand, searchTerm, locID, authToken);
-    console.log("Finished main execution.");
 }
 
-main().catch(error => {
-    console.error("Unexpected error:", error);
-});
+export async function Krogers(zipCode, searchTerm, brand = '') {
+    const token = await getAuthToken();
+    if (!token) {
+        console.error("Failed to obtain auth token.");
+        return [];
+    }
+
+    const locationId = await getLocationId(zipCode, token);
+    if (!locationId) {
+        console.error("No valid location found.");
+        return [];
+    }
+
+    const products = await getProducts(brand, searchTerm, locationId, token);
+    return products;
+}
