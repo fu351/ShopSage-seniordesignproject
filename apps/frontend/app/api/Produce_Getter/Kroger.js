@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import axios from 'axios';
+
 // Add your Kroger API credentials
 const CLIENT_ID = process.env.KROGER_CLIENT_ID;
 const CLIENT_SECRET = process.env.KROGER_CLIENT_SECRET;
+
 // Helper function to encode Base64
 function encodeBase64(clientId, clientSecret) {
     return Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
@@ -24,8 +26,10 @@ async function getAuthToken() {
                 }
             }
         );
+        console.log("Auth token:", response.data.access_token);
         return response.data.access_token;
     } catch (error) {
+        console.error("Error fetching auth token:", error.response ? error.response.data : error.message);
         throw new Error("Error fetching auth token:", error);
     }
 }
@@ -40,6 +44,7 @@ async function getLocationId(zipCode, authToken) {
         });
         return response.data.data[0].locationId;
     } catch (error) {
+        console.error("Error fetching location ID:", error.response ? error.response.data : error.message);
         throw new Error("Error fetching location ID:", error);
     }
 }
@@ -60,6 +65,7 @@ async function getProducts(brand = '', searchTerm, locationId, authToken) {
         
         return availableProducts;
     } catch (error) {
+        console.error("Error fetching products:", error.response ? error.response.data : error.message);
         throw new Error("Error fetching products:", error);
     }
 }

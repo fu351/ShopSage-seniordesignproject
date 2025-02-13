@@ -1,0 +1,1 @@
+export declare function Krogers(zipCode: number, searchTerm: string, brand?: string): Promise<any>;
