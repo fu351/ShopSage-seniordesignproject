@@ -1,9 +1,9 @@
-import axios from 'axios';
-
+require('dotenv').config();
+const axios = require('axios');
 // Add your Kroger API credentials
 const CLIENT_ID = process.env.KROGER_CLIENT_ID;
 const CLIENT_SECRET = process.env.KROGER_CLIENT_SECRET;
-
+console.log(CLIENT_ID, CLIENT_SECRET);
 // Helper function to encode Base64
 function encodeBase64(clientId, clientSecret) {
     return Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
@@ -27,7 +27,7 @@ async function getAuthToken() {
         );
         return response.data.access_token;
     } catch (error) {
-        console.error("Error fetching auth token:", error);
+        // console.error("Error fetching auth token:", error);
         return null;
     }
 }
@@ -42,7 +42,7 @@ async function getLocationId(zipCode, authToken) {
         });
         return response.data.data[0].locationId;
     } catch (error) {
-        console.error("Error fetching location ID:", error);
+        // console.error("Error fetching location ID:", error);
         return null;
     }
 }
@@ -63,24 +63,26 @@ async function getProducts(brand = '', searchTerm, locationId, authToken) {
         
         return availableProducts;
     } catch (error) {
-        console.error("Error fetching products:", error);
+        // console.error("Error fetching products:", error);
         return [];
     }
 }
 
-export async function Krogers(zipCode, searchTerm, brand = '') {
+async function Krogers(zipCode = 47906, searchTerm, brand = '') {
     const token = await getAuthToken();
     if (!token) {
-        console.error("Failed to obtain auth token.");
+        // console.error("Failed to obtain auth token.");
         return [];
     }
 
     const locationId = await getLocationId(zipCode, token);
     if (!locationId) {
-        console.error("No valid location found.");
+        // console.error("No valid location found.");
         return [];
     }
 
     const products = await getProducts(brand, searchTerm, locationId, token);
     return products;
 }
+
+module.exports = { Krogers };
