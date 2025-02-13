@@ -45,7 +45,11 @@ jobs:
       # Install Dependencies
       - name: Install dependencies
         run: pnpm install
-      
+
+      # Run Kroger API Unit Tests
+      - name: Run Kroger API Tests
+        run: pnpm test:kroger
+
       # Run ESLint
       - name: Run ESLint
         run: pnpm run lint
