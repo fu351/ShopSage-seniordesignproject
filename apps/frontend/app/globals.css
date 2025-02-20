@@ -63,14 +63,13 @@
     width: 100%;
     background-color: rgb(114, 142, 235);
     z-index: 100;
-    padding: 10px;
+    padding: 11px;
     text-align: center;
     font-size: 28px;
     font-weight: bold;
     color: rgb(0, 0, 0);
   }
 
-  
   /* Bottom Buttons */
   .button-container {
     position: fixed;
@@ -111,8 +110,8 @@
   }
   
   .category-row {
-    font-size: 24px; /* Adjust size as needed */
-    margin-top: 20px; /* Adds spacing above */
+    font-size: 24px;
+    margin-top: 20px;
   }
 
   .shopping-item {
@@ -183,4 +182,89 @@
 
   input[type="checkbox"]:hover {
     cursor: pointer;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 50px;
+    width: 350px;
+    height: calc(100vh - 50px);
+    background-color: #f5f5f5;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Search Bar */
+  .search-bar {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  /* Search Results */
+  .search-results {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  /* Individual Search Item */
+  .search-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    gap: 12px;
+  }
+
+  .search-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    text-align: left;
+  }
+  
+  .search-name {
+    font-weight: bold;
+  }
+  
+  .search-price {
+    color: #2a9d8f;
+    font-size: 14px;
+  }
+  
+  .search-location {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  /* Add Button */
+  .add-button {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .add-button:hover {
+    background-color: #218838;
   }
