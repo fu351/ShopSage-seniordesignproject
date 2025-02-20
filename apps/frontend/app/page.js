@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 
 export default function Home() {
   {/* SAMPLE DATA - GROCERY LIST*/}
@@ -25,9 +26,9 @@ export default function Home() {
 
   {/* SAMPLE DATA - SEARCH RESULTS*/}
   const [searchResults, setSearchResults] = useState([
-    { id: 101, name: "Almond Milk", price: 2.99, location: "Walmart", distance: "2.1 mi" },
-    { id: 102, name: "Oat Milk", price: 3.49, location: "Target", distance: "1.8 mi" },
-    { id: 103, name: "Soy Milk", price: 2.89, location: "Whole Foods", distance: "3.0 mi" },
+    { id: 101, category: "Dairy", name: "Almond Milk", price: 2.99, location: "Walmart", distance: "2.1 mi" },
+    { id: 102, category: "Dairy", name: "Oat Milk", price: 3.49, location: "Target", distance: "1.8 mi" },
+    { id: 103, category: "Dairy", name: "Soy Milk", price: 2.89, location: "Whole Foods", distance: "3.0 mi" },
   ]);
 
   {/* STATE - SEARCH QUERY*/}
@@ -71,9 +72,24 @@ export default function Home() {
   
   {/* Add Item to Shopping List Button */}
   const addToShoppingList = (item) => {
-    //setShoppingList(prevList => [...prevList, { ...item, quantity: 1, selected: false }]);
+    setShoppingList(prevList => {
+      // Check if the item already exists in the shopping list
+      const itemExists = prevList.some(existingItem => existingItem.id === item.id);
+      
+      if (!itemExists) {
+        return [...prevList, { ...item, quantity: 1, selected: false }];
+      }
+      
+      return prevList; // Return the same list if item already exists
+    });
   };
 
+  {/* Remove Item to Shopping List Button */}
+  const removeFromShoppingList = (id) => {
+    setShoppingList(prevList => prevList.filter(item => item.id !== id));
+  };
+
+  {/* View Search Bar */}
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible)
   }
@@ -100,36 +116,49 @@ export default function Home() {
           {/* Results display */}
           <div className="search-results">
             <div className="search-header">Search Results</div>
-            {searchResults.map((item) => (
-              // Display each item
-              <div key={item.id} className="search-item">
-                <div className="image-placeholder"></div>
-                <div className="search-details">
-                  <span className="search-name">{item.name}</span>
-                  <span className="search-price">${item.price.toFixed(2)}</span>
-                  <span className="search-location">{item.location} - {item.distance}</span>
+            {searchResults.map((item) => {
+              // Check if item is already in the shopping list
+              const itemExists = shoppingList.some(existingItem => existingItem.id === item.id);
+
+              return (
+                <div key={item.id} className="search-item">
+                  <div className="image-placeholder"></div>
+                  <div className="search-details">
+                    <span className="search-name">{item.name}</span>
+                    <span className="search-price">${item.price.toFixed(2)}</span>
+                    <span className="search-location">{item.location} - {item.distance}</span>
+                  </div>
+                  {/* Change button style and disable functionality if item exists */}
+                  <button
+                    className={`add-button ${itemExists ? "disabled" : ""}`}
+                    onClick={!itemExists ? () => addToShoppingList(item) : undefined}
+                    disabled={itemExists}
+                  >
+                    {itemExists ? "Added" : "Add"}
+                  </button>
                 </div>
-                <button className="add-button" onClick={() => addToShoppingList(item)}>Add</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Shopping List */}
       <div className="shopping-list">
-        {shoppingList.reduce((acc, item, index, array) => {
-          // Insert category row if it's the first item of a category
-          if (index === 0 || array[index - 1].category !== item.category) {
-            acc.push(
-              <div key={item.category} className="category-row">
-                {item.category}
-              </div>
-            );
+      {(() => {
+        const groupedItems = shoppingList.reduce((acc, item) => {
+          if (!acc[item.category]) {
+            acc[item.category] = [];
           }
+          acc[item.category].push(item);
+          return acc;
+        }, {});
 
-          // Add shopping item
-          acc.push(
+        return Object.entries(groupedItems).flatMap(([category, items]) => [
+          <div key={`category-${category}`} className="category-row">
+            {category}
+          </div>,
+          ...items.map((item) => (
             <div key={item.id} className="shopping-item">
               <div className="image-placeholder"></div>
               <div className="item-details">
@@ -149,27 +178,23 @@ export default function Home() {
                   </label>
                 </div>
               </div>
-              {/* Item Actions */}
               <div className="actions">
-                {/* Checkbox */}
                 <input
                   type="checkbox"
                   checked={item.selected}
                   onChange={() => toggleSelection(item.id)}
                 />
-                {/* View Similar Button */}
-                <button
-                  className="view-similar"
-                  onClick={() => handleViewSimilar(item.name)}
-                >
+                <button className="view-similar" onClick={() => handleViewSimilar(item.name)}>
                   Compare
+                </button>
+                <button className="remove-button" onClick={() => removeFromShoppingList(item.id)}>
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
-          );
-
-          return acc;
-        }, [])}
+          )),
+        ]);
+      })()}
       </div>
 
       {/* Bottom Buttons */}
