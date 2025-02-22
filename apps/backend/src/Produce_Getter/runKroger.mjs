@@ -1,4 +1,4 @@
-import { Krogers } from "./Kroger"; // Adjust import path as needed
+import { Krogers } from "./Kroger.mjs"; // Adjust import path as needed
 import 'dotenv/config';
 async function run() {
     const zipCode = '47906'; // You can change this to any zip code you want
