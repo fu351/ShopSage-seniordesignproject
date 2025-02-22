@@ -4,27 +4,47 @@
   "description": "Create a budgeting app that generates a shopping list that maximises cost savings based on user preference.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build": "pnpm -r run build",
     "start:backend": "pnpm --filter backend start",
     "start:frontend": "pnpm --filter frontend dev",
-    "start:all": "concurrently \"pnpm start:backend\" \"pnpm start:frontend\""
+    "start:all": "concurrently \"pnpm start:backend\" \"pnpm start:frontend\"",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test:kroger": "jest apps/frontend/app/api/Produce_Getter/__tests__/Kroger.test.ts"
   },
   "keywords": [],
   "private": true,
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.26.8",
+    "@babel/preset-env": "^7.26.8",
+    "@babel/preset-typescript": "^7.26.0",
+    "@eslint/compat": "^1.2.6",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.20.0",
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
     "axios": "^0.24.0",
-    "eslint": "^9.19.0",
-    "jquery": "^3.6.0",
-    "prettier": "^3.4.2",
+    "axios-mock-adapter": "^2.1.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^9.20.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "jest": "^29.7.0",
+    "jquery": "^3.7.1",
+    "prettier": "^3.5.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@types/node": "^22.12.0",
-    "@typescript-eslint/eslint-plugin": "^8.22.0",
-    "@typescript-eslint/parser": "^8.22.0",
-    "lucide-react": "^0.475.0"
+    "@types/node": "^22.13.1",
+    "dotenv": "^16.4.7",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
