@@ -43,6 +43,10 @@
   "dependencies": {
     "@types/node": "^22.13.1",
     "dotenv": "^16.4.7",
+//<<<<<<< frontend
+    "lucide-react": "^0.475.0",
+//=======
+//>>>>>>> dev
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }
