@@ -1,8 +1,12 @@
+// <<<<<<< frontend
 "use client";
 
 import React from "react";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+// =======
+// import React from 'react';
+// >>>>>>> dev
 
 export default function Home() {
   {/* SAMPLE DATA - GROCERY LIST*/}
