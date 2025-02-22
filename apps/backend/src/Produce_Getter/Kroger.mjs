@@ -85,4 +85,4 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
     return products;
 }
 
-module.exports = { Krogers };
+export { Krogers };
