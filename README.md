@@ -19,6 +19,7 @@ Create a budgeting app that generates a shopping list that maximises cost saving
 # EC2 Specific:
 * nginx reverse proxies port 80 to port 8080 (frontend)
 
-# Environment
+# Backend Environment
 * KROGER_CLIENT_ID
 * KROGER_CLIENT_SECRET
+* port
