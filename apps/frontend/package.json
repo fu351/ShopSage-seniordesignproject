@@ -4,12 +4,14 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint"
+    "lint": "next lint",
+    "start": "next start -H 0.0.0.0:8080"
   },
   "dependencies": {
     "@shared/types": "workspace:*",
     "@shared/utils": "workspace:*",
     "next": "15.1.6",
+    "nginx": "^1.0.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
