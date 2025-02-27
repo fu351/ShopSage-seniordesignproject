@@ -5,7 +5,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start -H 0.0.0.0:8080"
+    "start": "next start -H 54.152.144.61:8080"
   },
   "dependencies": {
     "@shared/types": "workspace:*",
