@@ -5,7 +5,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start -H 0.0.0.0 -p 8080"
+    "start": "next start -H 0.0.0.0 -p 8080",
+    "pm2:start": "pm2 start npm --name frontend -- start",
+    "pm2:stop": "pm2 stop frontend",
+    "pm2:restart": "pm2 restart frontend"
   },
   "dependencies": {
     "@shared/types": "workspace:*",
