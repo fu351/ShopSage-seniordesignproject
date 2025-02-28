@@ -2,8 +2,8 @@ import 'dotenv/config';
 import axios from 'axios';
 
 // Add your Kroger API credentials
-const CLIENT_ID = process.env.KROGER_CLIENT_ID;
-const CLIENT_SECRET = process.env.KROGER_CLIENT_SECRET;
+const CLIENT_ID = "shopsage-243261243034246d665a464b4d485545587677665835526a74466a2f2e704b6d6c4d4e43702f7758624341476a6d497947637268486441527250624f2908504214587086555";
+const CLIENT_SECRET = "ZoCeBUn1HvoveqtZQA4h1ji4wFh_dpe3uWLynFiO";
 
 // Helper function to encode Base64
 function encodeBase64(clientId, clientSecret) {
@@ -59,10 +59,16 @@ async function getProducts(brand = '', searchTerm, locationId, authToken) {
             }
         });
         
+        // Filter out products that are out of stock
         const availableProducts = response.data.data.filter(item => 
             item.items.some(subItem => subItem.inventory.stockLevel !== "TEMPORARILY_OUT_OF_STOCK")
         );
-        
+        // Sorts products by price to recommend the cheapest option
+        availableProducts.sort((a, b) => {
+            const priceA = a.items[0].price.regular;
+            const priceB = b.items[0].price.regular;
+            return priceA - priceB;
+        });
         return availableProducts;
     } catch (error) {
         console.error("Error fetching products:", error.response ? error.response.data : error.message);
