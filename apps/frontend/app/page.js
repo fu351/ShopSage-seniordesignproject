@@ -197,6 +197,58 @@ export default function Home() {
       })()}
       </div>
 
+      {/* Checkout Summary */}
+      <div className="checkout-summary">
+        <h3>Checkout Summary</h3>
+        {(() => {
+          const selectedItems = shoppingList.filter(item => item.selected);
+          
+          if (selectedItems.length === 0) {
+            return <p>No items selected.</p>;
+          }
+
+          // Group selected items by category
+          const groupedItems = selectedItems.reduce((acc, item) => {
+            if (!acc[item.category]) {
+              acc[item.category] = [];
+            }
+            acc[item.category].push(item);
+            return acc;
+          }, {});
+
+          return (
+            <>
+              {Object.entries(groupedItems).map(([category, items]) => (
+                <div key={category} className="checkout-category">
+                  <h4>{category}</h4>
+                  <ul>
+                    {items.map(item => (
+                      <li key={item.id} className="checkout-item">
+                        <span className="item-info">
+                          {item.name} x {item.quantity}
+                        </span>
+                        <span className="item-price">
+                          ${item.price.toFixed(2)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <div className="checkout-total">
+                <span>Total:</span>
+                <span className="total-price">
+                  ${selectedItems
+                    .reduce((total, item) => total + item.price * item.quantity, 0)
+                    .toFixed(2)}
+                </span>
+              </div>
+            </>
+          );
+        })()}
+      </div>
+
+
       {/* Bottom Buttons */}
       <div className="button-container">
         <button className="button">
