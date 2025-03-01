@@ -6,7 +6,9 @@ async function run() {
     const brand = ''; // You can specify a brand if needed
 
     const products = await Krogers(zipCode, searchTerm, brand);
-    console.log(products);
+    for (const product of products) {
+        console.log(product['upc'], product['brand'], product['description'], product['items']);
+    }
 }
 
 run().catch(error => {
