@@ -1,8 +1,10 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-      "outDir": "dist"
+      "outDir": "dist",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "allowJs": true
     },
     "include": ["src/**/*"]
   }
-  

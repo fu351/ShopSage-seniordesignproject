@@ -1,13 +1,13 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { Krogers } from "./Produce_Getter/Kroger";
+import { Krogers } from "./Produce_Getter/Kroger.mjs";
 import readline from "readline";
 //import fs from 'fs';
 import cors from 'cors';
 import 'dotenv/config';
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 5000;
 
 app.use(cors({
     origin: '*',

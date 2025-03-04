@@ -1,8 +1,10 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { Krogers } from "../Kroger"; // Adjust import path as needed
 
-const mock = new MockAdapter(axios);
+const axiosInstance = axios.default.create(); // Access default export correctly
+const mock = new MockAdapter(axiosInstance);
+
+import { Krogers } from "../Kroger.mjs"; // Adjust import path as needed
 
 describe("Kroger API - Unit Test", () => {
   afterEach(() => {
