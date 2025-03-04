@@ -16,7 +16,7 @@
     "pm2:frontend:restart": "pnpm --filter frontend pm2:restart",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test:kroger": "jest apps/frontend/app/api/Produce_Getter/__tests__/Kroger.test.ts"
+    "test:kroger": "jest apps/backend/src/Produce_Getter/__tests__/Kroger.test.ts"
   },
   "keywords": [],
   "private": true,
@@ -35,6 +35,7 @@
     "axios": "^0.24.0",
     "axios-mock-adapter": "^2.1.0",
     "babel-jest": "^29.7.0",
+    "concurrently": "^9.1.2",
     "eslint": "^9.20.1",
     "eslint-plugin-next": "^0.0.0",
     "eslint-plugin-react": "^7.37.4",

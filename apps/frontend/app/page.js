@@ -4,31 +4,14 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 
 export default function Home() {
-  {/* SAMPLE DATA - GROCERY LIST*/}
+  {/* GROCERY LIST*/}
   const [shoppingList, setShoppingList] = useState([
-    { id: 1, category: "Dairy", name: "Rice Milk", price: 2.31, quantity: 1, selected: false },
-    { id: 2, category: "Dairy", name: "Cheddar Cheese", price: 3.99, quantity: 1, selected: false },
-    { id: 3, category: "Dairy", name: "Greek Yogurt", price: 4.50, quantity: 1, selected: false },
-    { id: 4, category: "Beverages", name: "Black Tea", price: 5.58, quantity: 1, selected: false },
-    { id: 5, category: "Beverages", name: "Spring Water", price: 10.63, quantity: 1, selected: false },
-    { id: 6, category: "Beverages", name: "Orange Juice", price: 6.99, quantity: 1, selected: false },
-    { id: 7, category: "Frozen", name: "Frozen Blueberries", price: 4.99, quantity: 1, selected: false },
-    { id: 8, category: "Frozen", name: "Frozen Peas", price: 2.15, quantity: 1, selected: false },
-    { id: 9, category: "Frozen", name: "Frozen Pizza", price: 8.49, quantity: 1, selected: false },
-    { id: 10, category: "Frozen", name: "Frozen Chicken Nuggets", price: 7.99, quantity: 1, selected: false },
-    { id: 11, category: "Produce", name: "Avocados", price: 3.48, quantity: 1, selected: false },
-    { id: 12, category: "Produce", name: "Bananas", price: 1.99, quantity: 1, selected: false },
-    { id: 13, category: "Produce", name: "Carrots", price: 2.79, quantity: 1, selected: false },
-    { id: 14, category: "Produce", name: "Bell Peppers", price: 4.29, quantity: 1, selected: false },
-    { id: 15, category: "Bakery", name: "Whole Wheat Bread", price: 3.99, quantity: 1, selected: false },
-    { id: 16, category: "Bakery", name: "Bagels", price: 4.99, quantity: 1, selected: false },
+    //{ id: 1, category: "Dairy", name: "Rice Milk", price: 2.31, quantity: 1, selected: false },
   ]);
 
-  {/* SAMPLE DATA - SEARCH RESULTS*/}
+  {/* SEARCH RESULTS */}
   const [searchResults, setSearchResults] = useState([
-    { id: 101, category: "Dairy", name: "Almond Milk", price: 2.99, location: "Walmart", distance: "2.1 mi" },
-    { id: 102, category: "Dairy", name: "Oat Milk", price: 3.49, location: "Target", distance: "1.8 mi" },
-    { id: 103, category: "Dairy", name: "Soy Milk", price: 2.89, location: "Whole Foods", distance: "3.0 mi" },
+    //{ id: 101, category: "Dairy", name: "Almond Milk", price: 2.99, location: "Walmart", distance: "2.1 mi" },
   ]);
 
   {/* STATE - SEARCH QUERY*/}
@@ -62,22 +45,33 @@ export default function Home() {
 
   
   {/* Type in Search Query */}
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-    // Simulated search filter (you can replace this with an API call)
-    setSearchResults(prevResults => 
-      prevResults.filter(item => item.name.toLowerCase().includes(e.target.value.toLowerCase()))
-    );
+  const handleSearch = async (e) => {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(searchQuery)}`
+        );
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+  
+        const data = await response.json();
+        setSearchResults(data); // Update search results with data from Kroger API
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+      }
+    }
   };
   
   {/* Add Item to Shopping List Button */}
   const addToShoppingList = (item) => {
     setShoppingList(prevList => {
       // Check if the item already exists in the shopping list
-      const itemExists = prevList.some(existingItem => existingItem.id === item.id);
+      const itemExists = prevList.some(existingItem => existingItem.id === item.items?.[0]?.itemId);
       
       if (!itemExists) {
-        return [...prevList, { ...item, quantity: 1, selected: false }];
+        return [...prevList, { ...item, id: item.items?.[0]?.itemId, category: item.categories?.[0], name: item.items?.[0]?.name, price: item.items?.[0]?.price?.regular?.toFixed(2), quantity: 1, selected: false }];
       }
       
       return prevList; // Return the same list if item already exists
@@ -111,22 +105,40 @@ export default function Home() {
             className="search-bar"
             placeholder="Search items..."
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch} // Triggers API request on Enter
           />
           {/* Results display */}
           <div className="search-results">
             <div className="search-header">Search Results</div>
             {searchResults.map((item) => {
               // Check if item is already in the shopping list
-              const itemExists = shoppingList.some(existingItem => existingItem.id === item.id);
+              const itemExists = shoppingList.some(existingItem => existingItem.id === item.items?.[0]?.itemId);
 
               return (
-                <div key={item.id} className="search-item">
-                  <div className="image-placeholder"></div>
+                <div key={item.items?.[0]?.itemId} className="search-item">
+                  <div className="search-image">
+                    {item.images
+                      ?.find(img => img.perspective === "front")
+                      ?.sizes.find(size => size.size === "thumbnail")
+                      ?.url && (
+                        <img
+                          className="search-image"
+                          src={item.images.find(img => img.perspective === "front").sizes.find(size => size.size === "thumbnail").url}
+                          alt="Product Thumbnail"
+                        />
+                      )}
+                  </div>
                   <div className="search-details">
-                    <span className="search-name">{item.name}</span>
-                    <span className="search-price">${item.price.toFixed(2)}</span>
-                    <span className="search-location">{item.location} - {item.distance}</span>
+                    <span className="search-name">
+                      {item.description}
+                    </span>
+                    <span className="search-price">
+                      ${item.items?.[0]?.price?.regular?.toFixed(2) ?? "N/A"}
+                    </span>
+                    <span className="search-location">
+                      {item.location} - {item.distance}
+                    </span>
                   </div>
                   {/* Change button style and disable functionality if item exists */}
                   <button
@@ -159,12 +171,25 @@ export default function Home() {
             {category}
           </div>,
           ...items.map((item) => (
-            <div key={item.id} className="shopping-item">
-              <div className="image-placeholder"></div>
+            <div key={item.items?.[0]?.itemId} className="shopping-item">
+              <div className="image-placeholder">
+                {item.images
+                ?.find(img => img.perspective === "front")
+                ?.sizes.find(size => size.size === "thumbnail")
+                ?.url && (
+                  <img
+                    className="search-image"
+                    src={item.images.find(img => img.perspective === "front").sizes.find(size => size.size === "thumbnail").url}
+                    alt="Product Thumbnail"
+                  />
+                )}
+              </div>
               <div className="item-details">
-                <span className="item-name">{item.name}</span>
+                <span className="item-name">
+                  {item.description}
+                </span>
                 <div className="price-quantity">
-                  <span className="price">${item.price.toFixed(2)}</span>
+                  <span className="price">${item.items?.[0]?.price?.regular?.toFixed(2)}</span>
                   <label>
                     qty
                     <input
