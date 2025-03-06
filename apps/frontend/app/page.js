@@ -38,18 +38,22 @@ export default function Home() {
     );
   };
 
-  {/* View Similar Button */}
-  const handleViewSimilar = (name) => {
-    alert(`Viewing similar items for ${name}`);
-  };
-
+  // Last search query
+  const [lastSearch, setLastSearch] = useState("");
   
-  {/* Type in Search Query */}
-  const handleSearch = async (e) => {
-    if (e.key === "Enter" && searchQuery.trim() !== "") {
+  const handleViewSimilar = (item) => {
+    setSearchQuery(item.search);
+    handleSearchDirect(item.search);
+  };
+  
+  // Function to trigger search without needing an Enter key event
+  const handleSearchDirect = async (query) => {
+    setLastSearch(searchQuery)
+
+    if (query.trim() !== "") {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(searchQuery)}`
+          `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
         );
   
         if (!response.ok) {
@@ -64,6 +68,13 @@ export default function Home() {
     }
   };
   
+  // Modify handleSearch to use handleSearchDirect
+  const handleSearch = async (e) => {
+    if (e.key === "Enter") {
+      handleSearchDirect(searchQuery);
+    }
+  };
+  
   {/* Add Item to Shopping List Button */}
   const addToShoppingList = (item) => {
     setShoppingList(prevList => {
@@ -71,7 +82,7 @@ export default function Home() {
       const itemExists = prevList.some(existingItem => existingItem.id === item.items?.[0]?.itemId);
       
       if (!itemExists) {
-        return [...prevList, { ...item, id: item.items?.[0]?.itemId, category: item.categories?.[0], name: item.items?.[0]?.name, price: item.items?.[0]?.price?.regular?.toFixed(2), quantity: 1, selected: false }];
+        return [...prevList, { ...item, id: item.items?.[0]?.itemId, category: item.categories?.[0], name: item.items?.[0]?.name, price: item.items?.[0]?.price?.regular?.toFixed(2), quantity: 1, selected: false, location: item.location, search: lastSearch }];
       }
       
       return prevList; // Return the same list if item already exists
@@ -137,7 +148,7 @@ export default function Home() {
                       ${item.items?.[0]?.price?.regular?.toFixed(2) ?? "N/A"}
                     </span>
                     <span className="search-location">
-                      {item.location} - {item.distance}
+                      {item.location}
                     </span>
                   </div>
                   {/* Change button style and disable functionality if item exists */}
@@ -199,8 +210,12 @@ export default function Home() {
                       onChange={(e) =>
                         handleQuantityChange(item.id, parseInt(e.target.value) || 1)
                       }
+                      style={{ marginLeft: "6px" }}
                     />
                   </label>
+                </div>
+                <div className="item-location">
+                  {item.location || "N/A"}
                 </div>
               </div>
               <div className="actions">
@@ -209,7 +224,7 @@ export default function Home() {
                   checked={item.selected}
                   onChange={() => toggleSelection(item.id)}
                 />
-                <button className="view-similar" onClick={() => handleViewSimilar(item.name)}>
+                <button className="view-similar" onClick={() => handleViewSimilar(item)}>
                   Compare
                 </button>
                 <button className="remove-button" onClick={() => removeFromShoppingList(item.id)}>
@@ -227,44 +242,53 @@ export default function Home() {
         <h3>Checkout Summary</h3>
         {(() => {
           const selectedItems = shoppingList.filter(item => item.selected);
-          
+
           if (selectedItems.length === 0) {
             return <p>No items selected.</p>;
           }
 
-          // Group selected items by category
-          const groupedItems = selectedItems.reduce((acc, item) => {
-            if (!acc[item.category]) {
-              acc[item.category] = [];
+          // First, group items by location
+          const groupedByLocation = selectedItems.reduce((acc, item) => {
+            const location = item.location || "N/A";
+            if (!acc[location]) {
+              acc[location] = {};
             }
-            acc[item.category].push(item);
+            if (!acc[location][item.category]) {
+              acc[location][item.category] = [];
+            }
+            acc[location][item.category].push(item);
             return acc;
           }, {});
 
           return (
             <>
-              {Object.entries(groupedItems).map(([category, items]) => (
-                <div key={category} className="checkout-category">
-                  <h4>{category}</h4>
-                  <ul>
-                    {items.map(item => (
-                      <li key={item.id} className="checkout-item">
-                        <span className="item-info">
-                          {item.name} x {item.quantity}
-                        </span>
-                        <span className="item-price">
-                          ${item.price.toFixed(2)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+              {Object.entries(groupedByLocation).map(([location, categories]) => (
+                <div key={location} className="checkout-location">
+                  <h3 className="location-header">{location}</h3>
+                  {Object.entries(categories).map(([category, items]) => (
+                    <div key={category} className="checkout-category">
+                      <h4>{category}</h4>
+                      <ul>
+                        {items.map(item => (
+                          <li key={item.id} className="checkout-item">
+                            <span className="item-info">
+                              {item.description} x {item.quantity}
+                            </span>
+                            <span className="item-price">
+                              ${item.items?.[0]?.price?.regular?.toFixed(2)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               ))}
               <div className="checkout-total">
                 <span>Total:</span>
                 <span className="total-price">
                   ${selectedItems
-                    .reduce((total, item) => total + item.price * item.quantity, 0)
+                    .reduce((total, item) => total + item.items?.[0]?.price?.regular * item.quantity, 0)
                     .toFixed(2)}
                 </span>
               </div>

@@ -63,7 +63,8 @@ async function getLocationId(zipCode, authToken) {
             throw new Error(`No location found for ZIP: ${zipCode}`);
         }
 
-        return response.data.data[0].locationId;
+        return response;
+
     } catch (error) {
         console.error("Error fetching location ID:", error.response?.data || error.message);
         throw new Error("Error fetching location ID.");
@@ -71,8 +72,9 @@ async function getLocationId(zipCode, authToken) {
 }
 
 // Function to get products
-async function getProducts(brand = '', searchTerm, locationId, authToken) {
+async function getProducts(brand = '', searchTerm, location, authToken) {
     try {
+        const locationId = location["locationId"]
         console.log(`Fetching products for: ${searchTerm} at location ${locationId}`);
 
         const url = `https://api.kroger.com/v1/products`
@@ -85,9 +87,9 @@ async function getProducts(brand = '', searchTerm, locationId, authToken) {
             "filter.locationId": locationId,
             ...(brand && { "filter.brand": brand }) // Only include brand if it's provided
         }
-        console.log(url)
-        console.log(headers)
-        console.log(params)
+        //console.log(url)
+        //console.log(headers)
+        //console.log(params)
 
         const response = await axios.get(`https://api.kroger.com/v1/products`, {
             params: {
@@ -101,7 +103,7 @@ async function getProducts(brand = '', searchTerm, locationId, authToken) {
             }
         });
 
-        console.log("Product API Response:", JSON.stringify(response.data, null, 2));
+        //console.log("Product API Response:", JSON.stringify(response.data, null, 2));
 
         if (!response.data || !response.data.data || response.data.data.length === 0) {
             console.warn("No products found for search term:", searchTerm);
@@ -140,13 +142,22 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
         throw new Error("Failed to obtain auth token.");
     }
 
-    const locationId = await getLocationId(zipCode, token);
-    if (!locationId) {
+    // Get location response data for CLOSEST location
+    const location_data = await getLocationId(zipCode, token);
+    const location = {
+        "locationId": location_data.data.data[0].locationId,
+        "name": location_data.data.data[0].name
+    }
+
+    if (!location) {
         throw new Error("No valid location found.");
     }
 
-    const products = await getProducts(brand, searchTerm, locationId, token);
-    return products;
+    const products = await getProducts(brand, searchTerm, location, token);
+    return products.map(product => ({
+        ...product,
+        location: location["name"]
+    }));
 }
 
 export { Krogers };
