@@ -9,14 +9,10 @@ import 'dotenv/config';
 const app = express();
 const port = parseInt(process.env.PORT || '5000', 10);
 
-const options = {
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.cert'),
-};
-
 app.use(cors({
     origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
   }));
 
 app.use(bodyParser.json());
