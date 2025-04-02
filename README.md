@@ -22,4 +22,8 @@ Create a budgeting app that generates a shopping list that maximises cost saving
 # Backend Environment
 * KROGER_CLIENT_ID
 * KROGER_CLIENT_SECRET
-* port
+* PORT
+
+# Frontend Environment
+* SERVER_IP
+* BACKEND_PORT=5000
