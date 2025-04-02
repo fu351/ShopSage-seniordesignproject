@@ -23,3 +23,7 @@ Create a budgeting app that generates a shopping list that maximises cost saving
 * KROGER_CLIENT_ID
 * KROGER_CLIENT_SECRET
 * port
+* JWT_SECRET
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+* AWS_REGION

@@ -18,7 +18,7 @@ AWS.config.update({
 });
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const USERS_TABLE = "Users"; // Change this if your table name is different
+const USERS_TABLE = "Users";
 
 dotenv.config();
 
