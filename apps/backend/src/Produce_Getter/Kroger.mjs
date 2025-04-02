@@ -11,7 +11,7 @@ function encodeBase64(clientId, clientSecret) {
 }
 
 // Print the Base64-encoded authorization string
-//const encodedAuth = encodeBase64(CLIENT_ID, CLIENT_SECRET);
+const encodedAuth = encodeBase64(CLIENT_ID, CLIENT_SECRET);
 //console.log("Encoded Authorization Header:", "Basic " + encodedAuth);
 
 // Function to get the Auth Token
@@ -72,21 +72,21 @@ async function getLocationId(zipCode, authToken) {
 }
 
 // Function to get products
-async function getProducts(searchTerm, location, authToken) {
+async function getProducts(brand = '', searchTerm, location, authToken) {
     try {
         const locationId = location["locationId"]
         console.log(`Fetching products for: ${searchTerm} at location ${locationId}`);
 
-        //const url = `https://api.kroger.com/v1/products`
-        /*const headers = {
+        const url = `https://api.kroger.com/v1/products`
+        const headers = {
             'Accept': 'application/json',
             'Authorization': `Bearer ${authToken}`
-        }*/
-        /*const params = {
+        }
+        const params = {
             "filter.term": searchTerm,
             "filter.locationId": locationId,
             ...(brand && { "filter.brand": brand }) // Only include brand if it's provided
-        }*/
+        }
         //console.log(url)
         //console.log(headers)
         //console.log(params)
@@ -153,7 +153,7 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
         throw new Error("No valid location found.");
     }
 
-    const products = await getProducts(searchTerm, location, token);
+    const products = await getProducts(brand, searchTerm, location, token);
     return products.map(product => ({
         ...product,
         location: location["name"]
