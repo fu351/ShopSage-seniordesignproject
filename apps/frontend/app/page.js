@@ -56,7 +56,7 @@ export default function Home() {
     if (query.trim() !== "") {
       try {
         const response = await fetch(
-          `https://${ip}:${port}/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
+          `/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
         );
   
         if (!response.ok) {
