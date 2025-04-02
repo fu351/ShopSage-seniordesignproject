@@ -2,7 +2,9 @@
 import React from "react";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import 'dotenv/config';
+
+const ip = '3.85.63.15';
+const port = 5000;
 
 export default function Home() {
   {/* GROCERY LIST*/}
@@ -54,7 +56,7 @@ export default function Home() {
     if (query.trim() !== "") {
       try {
         const response = await fetch(
-          `http://${process.env.SERVER_IP}:${process.env.BACKEND_PORT}/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
+          `https://${ip}:${port}/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
         );
   
         if (!response.ok) {
