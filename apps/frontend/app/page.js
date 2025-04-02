@@ -3,9 +3,6 @@ import React from "react";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 
-const ip = '3.85.63.15';
-const port = 5000;
-
 export default function Home() {
   {/* GROCERY LIST*/}
   const [shoppingList, setShoppingList] = useState([

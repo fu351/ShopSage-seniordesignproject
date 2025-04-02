@@ -1,8 +1,6 @@
 import express, { Request, Response } from 'express';
-import https from 'https';
 import bodyParser from 'body-parser';
 import { Krogers } from "./Produce_Getter/Kroger.mjs";
-import fs from 'fs';
 import cors from 'cors';
 import 'dotenv/config';
 
@@ -43,7 +41,3 @@ app.get('/', (req, res) => {
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
   });
-
-// https.createServer(options, app).listen(5000, '0.0.0.0', () => {
-//   console.log('Server running on https://0.0.0.0:5000');
-// });
