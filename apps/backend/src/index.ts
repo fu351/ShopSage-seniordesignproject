@@ -44,10 +44,10 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-// app.listen(port, '0.0.0.0', () => {
-//     console.log(`Server is running on port ${port}`);
-//   });
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server is running on port ${port}`);
+  });
 
-https.createServer(options, app).listen(5000, '0.0.0.0', () => {
-  console.log('Server running on https://0.0.0.0:5000');
-});
+// https.createServer(options, app).listen(5000, '0.0.0.0', () => {
+//   console.log('Server running on https://0.0.0.0:5000');
+// });
