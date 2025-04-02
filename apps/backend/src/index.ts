@@ -6,7 +6,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = parseInt(process.env.PORT || '5000', 10);
 
 app.use(cors({
     origin: '*',
@@ -44,6 +44,6 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
   });
