@@ -10,16 +10,9 @@ const port = parseInt(process.env.PORT || '5000', 10);
 
 app.use(cors({
     origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  })); // Add this line to enable CORS
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+  }));
   app.use(bodyParser.json());
-
-app.use(cors({
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-}));
 
 // Example endpoint
 app.get('/api/example', (req: Request, res: Response) => {
