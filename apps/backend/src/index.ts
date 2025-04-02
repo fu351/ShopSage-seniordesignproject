@@ -1,25 +1,19 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { Krogers } from "./Produce_Getter/Kroger.mjs";
-//import fs from 'fs';
 import cors from 'cors';
 import 'dotenv/config';
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = parseInt(process.env.PORT || '5000', 10);
 
 app.use(cors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
-  })); // Add this line to enable CORS
-  app.use(bodyParser.json());
+  }));
 
-app.use(cors({
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-}));
+app.use(bodyParser.json());
 
 // Example endpoint
 app.get('/api/example', (req: Request, res: Response) => {
@@ -44,6 +38,6 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
   });
