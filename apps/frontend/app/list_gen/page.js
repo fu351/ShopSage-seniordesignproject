@@ -28,7 +28,8 @@ export default function Home() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
+          `/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
+          //USE this for localhost testing instead `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch products");
