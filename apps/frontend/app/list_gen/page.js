@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Trash2 } from "lucide-react";
-
+import Link from "next/link";
 export default function Home() {
   const [shoppingList, setShoppingList] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -81,7 +81,9 @@ export default function Home() {
     <div className="page-container">
       {/* Header with Logo */}
       <header className="header">
+        <Link href="..">
         <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
+        </Link>
       </header>
 
       {/* Main Content */}
