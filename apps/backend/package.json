@@ -9,14 +9,18 @@
   "dependencies": {
     "@shared/types": "workspace:*",
     "@shared/utils": "workspace:*",
+    "aws-sdk": "^2.1692.0",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.12.0",
     "@types/react": "^19.0.8",
     "nodemon": "^3.1.9",
