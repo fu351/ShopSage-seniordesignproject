@@ -28,7 +28,10 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "pm2:start": "pm2 start npm --name backend -- start",
+    "pm2:stop": "pm2 stop backend",
+    "pm2:restart": "pm2 restart backend"
   },
   "type": "module"
 }
