@@ -59,10 +59,10 @@ app.get('/api/kroger', async (req: Request, res: Response) => {
 
 // Sams Club API endpoint
 app.get('/api/samsclub', async (req: Request, res: Response) => {
-  const { clubId, searchTerm } = req.query;
+  const { zipCode, searchTerm } = req.query;
 
   try {
-      const products = await SamsClubs(Number(clubId), String(searchTerm));
+      const products = await SamsClubs(Number(zipCode), String(searchTerm));
       res.json(products);
   } catch (error) {
       console.error("Error fetching products from Sams Club API:", error);
@@ -169,6 +169,6 @@ app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
 });
 
 // Start the server
-app.listen(port, 'localhost', () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
 });

@@ -166,11 +166,13 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
             description: "",
             category: p.categories?.[0],
             price: item?.price?.regular?.toFixed(2),
-            image_url: thumbnailUrl || null
+            image_url: thumbnailUrl || null,
+            source: "Kroger",
+            location: location["name"]
         };
     });
 
-    console.log(details)
+    //console.log(details)
     return details;
 
     //return products.map(product => ({

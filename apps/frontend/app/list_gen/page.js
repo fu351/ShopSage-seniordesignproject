@@ -27,18 +27,27 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5000/api/samsclub?clubId=8169&searchTerm=${encodeURIComponent(query)}`
-          //`http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
-          
-          // `/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
-          //USE this for localhost testing instead `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
-        );
-        if (!response.ok) {
+        const [response_sams, response_kroger] = await Promise.all([
+          //fetch(`http://localhost:5000/api/samsclub?zipCode=47906&searchTerm=${encodeURIComponent(query)}`),
+          fetch(`/api/kroger?clubId=8169searchTerm=${encodeURIComponent(query)}`),
+          //fetch(`http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
+          fetch(`/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
+        ]);
+
+        if (!response_sams.ok || !response_kroger.ok) {
           throw new Error("Failed to fetch products");
         }
-        const data = await response.json();
-        setSearchResults(data);
+
+        const [data_sams, data_kroger] = await Promise.all([
+          response_sams.json(),
+          response_kroger.json()
+        ]);
+
+        const combinedResults = [...data_sams, ...data_kroger];
+        const sortedResults = combinedResults.sort((a, b) => a.price - b.price);
+
+        setSearchResults(sortedResults);
+        
       } catch (error) {
         console.error("Error fetching search results:", error);
       } finally {
