@@ -9,6 +9,7 @@ import AWS from 'aws-sdk';
 
 // Import Kroger dynamically if using .mjs
 const { Krogers } = await import("./Produce_Getter/Kroger.mjs");
+const { SamsClubs } = await import("./Produce_Getter/SamsClub.mjs")
 
 // Configure AWS
 AWS.config.update({
@@ -25,9 +26,9 @@ dotenv.config();
 const app = express();
 const port = parseInt(process.env.PORT || '5000', 10);
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined in environment variables");
-}
+//if (!process.env.JWT_SECRET) {
+//  throw new Error("JWT_SECRET is not defined in environment variables");
+//}
 
 // Middleware
 app.use(cors({
@@ -53,6 +54,19 @@ app.get('/api/kroger', async (req: Request, res: Response) => {
   } catch (error) {
       console.error("Error fetching products from Kroger API:", error);
       res.status(500).json({ error: "Failed to fetch products from Kroger API" });
+  }
+});
+
+// Sams Club API endpoint
+app.get('/api/samsclub', async (req: Request, res: Response) => {
+  const { clubId, searchTerm } = req.query;
+
+  try {
+      const products = await SamsClubs(Number(clubId), String(searchTerm));
+      res.json(products);
+  } catch (error) {
+      console.error("Error fetching products from Sams Club API:", error);
+      res.status(500).json({ error: "Failed to fetch products from Sams Club API" });
   }
 });
 
@@ -155,6 +169,6 @@ app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, 'localhost', () => {
     console.log(`Server is running on port ${port}`);
 });

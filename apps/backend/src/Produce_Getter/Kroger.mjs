@@ -57,7 +57,7 @@ async function getLocationId(zipCode, authToken) {
             }
         });
 
-        console.log("Location API Response:", response.data); // Debugging
+        //console.log("Location API Response:", response.data); // Debugging
 
         if (!response.data || !response.data.data || response.data.data.length === 0) {
             throw new Error(`No location found for ZIP: ${zipCode}`);
@@ -127,7 +127,7 @@ async function getProducts(brand = '', searchTerm, location, authToken) {
             return priceA - priceB;
         });
 
-        console.log("Filtered and Sorted Products:", availableProducts);
+        //console.log("Filtered and Sorted Products:", availableProducts);
         return availableProducts;
 
     } catch (error) {
@@ -154,10 +154,29 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
     }
 
     const products = await getProducts(brand, searchTerm, location, token);
-    return products.map(product => ({
-        ...product,
-        location: location["name"]
-    }));
+    
+    const details = products.map(p => {
+        const item = p.items?.[0];
+        const frontImage = p.images?.find(img => img.perspective === "front");
+        const thumbnailUrl = frontImage?.sizes?.find(size => size.size === "thumbnail")?.url;
+    
+        return {
+            id: item?.itemId,
+            name: p.description,
+            description: "",
+            category: p.categories?.[0],
+            price: item?.price?.regular?.toFixed(2),
+            image_url: thumbnailUrl || null
+        };
+    });
+
+    console.log(details)
+    return details;
+
+    //return products.map(product => ({
+    //    ...product,
+    //    location: location["name"]
+    //}));
 }
 
 export { Krogers };
