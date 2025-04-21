@@ -147,17 +147,27 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
     const location = {
         "locationId": location_data.data.data[0].locationId,
         "name": location_data.data.data[0].name
-    }
+    };
 
     if (!location) {
         throw new Error("No valid location found.");
     }
 
     const products = await getProducts(brand, searchTerm, location, token);
-    return products.map(product => ({
-        ...product,
-        location: location["name"]
-    }));
+    return products.map(product => {
+        const price = product.items?.[0]?.price?.regular || null;
+        const unit = parseFloat(product.items?.[0]?.size?.split(" ")[0]) || null;
+        const pricePerUnit = price && unit ? (price / unit).toFixed(2) : null;
+
+        return {
+            title: product.description || "",
+            brand: product.brand || "",
+            price,
+            unit: product.items?.[0]?.size || "N/A",
+            pricePerUnit,
+            location: location["name"]
+        };
+    });
 }
 
 export { Krogers };
