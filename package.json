@@ -14,6 +14,12 @@
     "pm2:frontend:start": "pnpm --filter frontend pm2:start",
     "pm2:frontend:stop": "pnpm --filter frontend pm2:stop",
     "pm2:frontend:restart": "pnpm --filter frontend pm2:restart",
+    "pm2:backend:start": "pnpm --filter backend pm2:start",
+    "pm2:backend:stop": "pnpm --filter backend pm2:stop",
+    "pm2:backend:restart": "pnpm --filter backend pm2:restart",
+    "pm2:all:start": "concurrently \"pnpm --filter frontend pm2:start\" \"pnpm --filter backend pm2:start\"",
+    "pm2:all:stop": "concurrently \"pnpm --filter frontend pm2:stop\" \"pnpm --filter backend pm2:stop\"",
+    "pm2:all:restart": "concurrently \"pnpm --filter frontend pm2:restart\" \"pnpm --filter backend pm2:restart\"",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "test:kroger": "jest apps/backend/src/Produce_Getter/__tests__/Kroger.test.ts"

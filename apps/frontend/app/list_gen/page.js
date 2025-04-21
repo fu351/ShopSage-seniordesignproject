@@ -27,14 +27,27 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
-        );
-        if (!response.ok) {
+        const [response_sams, response_kroger] = await Promise.all([
+          //fetch(`http://localhost:5000/api/samsclub?zipCode=47906&searchTerm=${encodeURIComponent(query)}`),
+          fetch(`/api/kroger?clubId=8169searchTerm=${encodeURIComponent(query)}`),
+          //fetch(`http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
+          fetch(`/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
+        ]);
+
+        if (!response_sams.ok || !response_kroger.ok) {
           throw new Error("Failed to fetch products");
         }
-        const data = await response.json();
-        setSearchResults(data);
+
+        const [data_sams, data_kroger] = await Promise.all([
+          response_sams.json(),
+          response_kroger.json()
+        ]);
+
+        const combinedResults = [...data_sams, ...data_kroger];
+        const sortedResults = combinedResults.sort((a, b) => a.price - b.price);
+
+        setSearchResults(sortedResults);
+        
       } catch (error) {
         console.error("Error fetching search results:", error);
       } finally {
@@ -52,17 +65,13 @@ export default function Home() {
   const addToShoppingList = (item) => {
     setShoppingList((prevList) => {
       const itemExists = prevList.some(
-        (existingItem) => existingItem.id === item.items?.[0]?.itemId
+        (existingItem) => existingItem.id === item.id
       );
       if (!itemExists) {
         return [
           ...prevList,
           {
             ...item,
-            id: item.items?.[0]?.itemId,
-            category: item.categories?.[0],
-            name: item.items?.[0]?.name,
-            price: item.items?.[0]?.price?.regular?.toFixed(2),
             quantity: 1,
             location: item.location,
             search: lastSearch,
@@ -106,12 +115,12 @@ export default function Home() {
             ) : (
               searchResults.map((item) => {
                 const itemExists = shoppingList.some(
-                  (existingItem) => existingItem.id === item.items?.[0]?.itemId
+                  (existingItem) => existingItem.id === item.id
                 );
                 return (
                   <div key={item.items?.[0]?.itemId} className="search-item">
                     <div className="search-image">
-                      {item.images
+                      {/* {item.images
                         ?.find((img) => img.perspective === "front")
                         ?.sizes.find((size) => size.size === "thumbnail")
                         ?.url && (
@@ -122,11 +131,18 @@ export default function Home() {
                           alt="Product Thumbnail"
                         />
                       )}
+                      */}
+                      {item.image_url && (
+                        <img
+                          src={item.image_url}
+                          alt="Product Thumbnail"
+                        />
+                      )}
                     </div>
                     <div className="search-details">
-                      <span className="search-name">{item.description}</span>
+                      <span className="search-name">{item.name}</span>
                       <span className="search-price">
-                        ${item.items?.[0]?.price?.regular?.toFixed(2) ?? "N/A"}
+                        ${item.price}
                       </span>
                       <span className="search-location">{item.location}</span>
                     </div>
@@ -166,6 +182,7 @@ export default function Home() {
                   {items.map((item) => (
                     <div key={item.id} className="shopping-item">
                       <div className="image-placeholder">
+                        {/*
                         {item.images
                           ?.find((img) => img.perspective === "front")
                           ?.sizes.find((size) => size.size === "thumbnail")
@@ -178,12 +195,19 @@ export default function Home() {
                             alt="Product Thumbnail"
                           />
                         )}
+                        */}
+                        {item.image_url && (
+                          <img
+                            src={item.image_url}
+                            alt="Product Thumbnail"
+                          />
+                        )}
                       </div>
                       <div className="item-details">
-                        <span className="item-name">{item.description}</span>
+                        <span className="item-name">{item.name}</span>
                         <div className="price-quantity">
                           <span className="price">
-                            ${item.items?.[0]?.price?.regular.toFixed(2)}
+                            ${item.price}
                           </span>
                           <label>
                             qty
@@ -254,12 +278,12 @@ export default function Home() {
                             {items.map((item) => (
                               <li key={item.id} className="checkout-item">
                                 <span className="item-info">
-                                  {item.description} x {item.quantity}
+                                  {item.name} x {item.quantity}
                                 </span>
                                 <span className="item-price">
                                   $
                                   {(
-                                    item.items?.[0]?.price?.regular *
+                                    item.price *
                                     item.quantity
                                   ).toFixed(2)}
                                 </span>
@@ -279,7 +303,7 @@ export default function Home() {
                       .reduce(
                         (total, item) =>
                           total +
-                          item.items?.[0]?.price?.regular * item.quantity,
+                          item.price * item.quantity,
                         0
                       )
                       .toFixed(2)}

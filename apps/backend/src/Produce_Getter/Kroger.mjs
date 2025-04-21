@@ -57,7 +57,7 @@ async function getLocationId(zipCode, authToken) {
             }
         });
 
-        console.log("Location API Response:", response.data); // Debugging
+        //console.log("Location API Response:", response.data); // Debugging
 
         if (!response.data || !response.data.data || response.data.data.length === 0) {
             throw new Error(`No location found for ZIP: ${zipCode}`);
@@ -127,7 +127,7 @@ async function getProducts(brand = '', searchTerm, location, authToken) {
             return priceA - priceB;
         });
 
-        console.log("Filtered and Sorted Products:", availableProducts);
+        //console.log("Filtered and Sorted Products:", availableProducts);
         return availableProducts;
 
     } catch (error) {
