@@ -49,7 +49,7 @@ app.get('/api/kroger', async (req: Request, res: Response) => {
   const { zipCode, searchTerm, brand } = req.query;
 
   try {
-      const products = await Krogers(Number(zipCode), String(searchTerm), String(brand));
+      const products = await Krogers(String(zipCode ?? "47906")/*Number(zipCode)*/, String(searchTerm), String(brand));
       res.json(products);
   } catch (error) {
       console.error("Error fetching products from Kroger API:", error);
