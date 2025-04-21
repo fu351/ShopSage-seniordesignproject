@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import bodyParser from 'body-parser';
-import { Krogers } from "./Produce_Getter/Kroger.mjs";
+// Removed the static import of Krogers to avoid conflict with the dynamic import below
 import { getTargetProducts } from "./Produce_Getter/Target.mjs";
 import readline from "readline";
 //import fs from 'fs';
@@ -50,34 +50,44 @@ app.get('/api/example', (req: Request, res: Response) => {
 
 // Kroger API endpoint
 app.get('/api/kroger', async (req: Request, res: Response) => {
-  const { zipCode, searchTerm, brand } = req.query;
+    const { zipCode, searchTerm, brand } = req.query;
 
-  try {
-      const products = await Krogers(Number(zipCode), String(searchTerm), String(brand));
-      res.json(products);
-  } catch (error) {
-      console.error("Error fetching products from Kroger API:", error);
-      res.status(500).json({ error: "Failed to fetch products from Kroger API" });
-  }
+    try {
+        if (!zipCode || !searchTerm) {
+            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+        }
+        const products = await Krogers(Number(zipCode), String(searchTerm), String(brand || ""));
+        res.json(products);
+    } catch (error) {
+        console.error("Error fetching products from Kroger API:", error);
+        res.status(500).json({ error: "Failed to fetch products from Kroger API" });
+    }
 });
-
 
 // Sams Club API endpoint
 app.get('/api/samsclub', async (req: Request, res: Response) => {
-  const { zipCode, searchTerm } = req.query;
+    const { zipCode, searchTerm } = req.query;
 
-  try {
-      const products = await SamsClubs(Number(zipCode), String(searchTerm));
-      res.json(products);
-  } catch (error) {
-      console.error("Error fetching products from Sams Club API:", error);
-      res.status(500).json({ error: "Failed to fetch products from Sams Club API" });
-  }
+    try {
+        if (!zipCode || !searchTerm) {
+            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+        }
+        const products = await SamsClubs(Number(zipCode), String(searchTerm));
+        res.json(products);
+    } catch (error) {
+        console.error("Error fetching products from Sams Club API:", error);
+        res.status(500).json({ error: "Failed to fetch products from Sams Club API" });
+    }
+});
+
 // Target API endpoint
 app.get('/api/target', async (req: Request, res: Response) => {
     const { keyword, zipCode, sortBy } = req.query;
 
     try {
+        if (!keyword || !zipCode) {
+            return res.status(400).json({ error: "Missing required query parameters: keyword and zipCode" });
+        }
         const products = await getTargetProducts(String(keyword), String(zipCode), String(sortBy || "price"));
         res.json(products);
     } catch (error) {
@@ -91,15 +101,17 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
     const { zipCode, searchTerm, brand, keyword, sortBy } = req.query;
 
     try {
-        // Fetch data from Kroger and Target APIs
-        const [krogerProducts, targetProducts] = await Promise.all([
-            Krogers(Number(zipCode), String(searchTerm), String(brand)),
-            getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
+        if (!zipCode || !searchTerm) {
+            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+        }
+        const [krogerProducts, targetProducts, samsClubProducts] = await Promise.all([
+            Krogers(Number(zipCode), String(searchTerm), String(brand || "")),
+            getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price")),
+            SamsClubs(Number(zipCode), String(searchTerm))
         ]);
 
-        // Normalize the responses to have the same structure
         const normalizeProduct = (product: any, provider: string) => ({
-            title: product.title || "",
+            title: product.title || product.name || "",
             brand: product.brand || "",
             price: product.price || null,
             unit: product.unit || "N/A",
@@ -108,17 +120,13 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
             provider,
         });
 
-        const normalizedKrogerProducts = krogerProducts.map((product: any) => normalizeProduct(product, "Kroger"));
-        const normalizedTargetProducts = targetProducts.map((product: any) => normalizeProduct(product, "Target"));
+        const combinedProducts = [
+            ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
+            ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
+            ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
+        ];
 
-        // Combine the results
-        const combinedProducts = [...normalizedKrogerProducts, ...normalizedTargetProducts];
-        combinedProducts.sort((a, b) => {
-            if (a.price && b.price) {
-                return a.price - b.price;
-            }
-            return 0; // If prices are not available, keep the original order
-        });   
+        combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
         res.json(combinedProducts);
     } catch (error) {
         console.error("Error fetching combined products:", error.message);
