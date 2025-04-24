@@ -14,19 +14,19 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
         keyword,
         new_search: "true",
         offset: 0,
-        page: `/s/${keyword}`,
+        page: `/s/${encodeURIComponent(keyword)}`,
         platform: "desktop",
         pricing_store_id: 3309,
         scheduled_delivery_store_id: 3309,
         spellcheck: "true",
         store_ids: "3309,1762,111,1366,1063",
-        useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-        visitor_id: "019603CB251B020186DC9640FEF301B9",
+        useragent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        visitor_id: "019669F54C3102019409F15469E30DAF",
         zip: zipCode
     };
 
     const headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
     };
 
     try {
@@ -34,8 +34,8 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
         const products = response.data.data.search.products;
         const cleanedProducts = products.map(product => {
             const price = product.price?.current_retail || null;
-            const unit = parseFloat(product.price?.formatted_unit_price?.split(" ")[0]) || null;
-            const pricePerUnit = price && unit ? (price / unit).toFixed(2) : null;
+            const unit = parseFloat(product.price?.formatted_unit_price?.split(" ")[0]) || Infinity;
+            const pricePerUnit = price && unit ? (price / unit).toFixed(2) : Infinity;
 
             return {
                 title: product.item?.product_description?.title || "",
@@ -47,11 +47,13 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
                 unitPriceSuffix: product.price?.formatted_unit_price_suffix || "",
                 bulletDescriptions: product.item?.product_description?.bullet_descriptions || [],
                 softBullets: product.item?.product_description?.soft_bullets?.bullets || [],
-                provider: "Target"
+                provider: "Target",
+                image_url: product.item?.enrichment?.images?.primary_image_url || "",
             };
         });
 
         cleanedProducts.sort((a, b) => (a[sortBy] ?? Infinity) - (b[sortBy] ?? Infinity));
+        console.log("Target products fetched successfully:", cleanedProducts);
         return cleanedProducts;
     } catch (error) {
         console.error("Error fetching Target products:", error.response?.data || error.message);

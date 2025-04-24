@@ -107,7 +107,7 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
         const [krogerProducts, samsClubProducts, targetProducts] = await Promise.all([
             Krogers(Number(zipCode?? 47906), String(searchTerm), String(brand || "")),
             SamsClubs(Number(zipCode?? 47906), String(searchTerm)),
-            //getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
+            getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
         ]);
 
         const normalizeProduct = (product: any, provider: string) => ({
@@ -120,16 +120,16 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
           unit: product.unit || "N/A",
           pricePerUnit: product.pricePerUnit || null,
           image_url: product.image_url || "",
-          location: product.location || "N/A",
+          location: product.location || product.provider || "N/A",
           provider
         });
 
         //console.log(krogerProducts);
         //console.log(samsClubProducts);
-
+        // console.log(targetProducts);
         const combinedProducts = [
             ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
-            //...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
+            ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
             ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
         ];
 

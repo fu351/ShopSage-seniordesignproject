@@ -27,14 +27,17 @@
     "@types/node": "^22.12.0",
     "@types/react": "^19.0.8",
     "nodemon": "^3.1.9",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "shx": "^0.3.4",
+    "ts-node-dev": "^2.0.0"
   },
   "scripts": {
-    "build": "babel src --out-dir dist --extensions .ts,.js,.tsx,.jsx && cp src/Produce_Getter/Kroger.mjs dist/Produce_Getter/Kroger.mjs && cp src/Produce_Getter/SamsClub.mjs dist/Produce_Getter/SamsClub.mjs && cp src/Produce_Getter/Target.mjs dist/Produce_Getter/Target.mjs",
+    "build": "babel src --out-dir dist --extensions .ts,.js,.tsx,.jsx && shx cp src/Produce_Getter/Kroger.mjs dist/Produce_Getter/Kroger.mjs && shx cp src/Produce_Getter/SamsClub.mjs dist/Produce_Getter/SamsClub.mjs && shx cp src/Produce_Getter/Target.mjs dist/Produce_Getter/Target.mjs",
     "start": "node dist/index.js",
     "pm2:start": "pm2 start npm --name backend -- start",
     "pm2:stop": "pm2 stop backend",
-    "pm2:restart": "pm2 restart backend"
+    "pm2:restart": "pm2 restart backend",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "type": "module"
 }
