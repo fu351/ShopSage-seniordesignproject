@@ -449,9 +449,9 @@ body {
 
 /* Navigation Button in Grocery List Builder */
 .home-nav-button {
-  position: absolute;
+  /* position: absolute;
   top: 16px;
-  right: 16px;
+  right: 16px; */
   background-color: var(--primary-green);
   color: white;
   padding: 8px 16px;
@@ -464,4 +464,88 @@ body {
 
 .home-nav-button:hover {
   background-color: #7aa77a;
+}
+
+/* Authentication Modal */
+.auth-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.auth-modal-container {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  min-width: 300px;
+  position: relative;
+}
+
+/* Back arrow for signup mode */
+.auth-modal-back {
+  top: 2px;
+  left: 2px;
+  background-color: var(--primary-green);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Close button */
+.auth-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Modal buttons container */
+.modal-buttons {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: row; /* Ensure buttons are aligned horizontally */
+  gap: 8px; /* Add spacing between buttons */
+}
+.modal-button-styling {
+  background-color: var(--primary-green);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+/* Authentication Dropdown */
+.auth-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 8px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 100;
+}
+
+.auth-dropdown a {
+  display: block;
+  padding: 4px 8px;
+  color: var(--dark-brown);
+  text-decoration: none;
+}
+
+.auth-dropdown a:hover {
+  background-color: #e0e0e0;
 }
