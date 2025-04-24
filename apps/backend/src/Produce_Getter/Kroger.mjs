@@ -158,13 +158,20 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
         const price = product.items?.[0]?.price?.regular || null;
         const unit = parseFloat(product.items?.[0]?.size?.split(" ")[0]) || null;
         const pricePerUnit = price && unit ? (price / unit).toFixed(2) : null;
+        const item = product.items?.[0];
+        const frontImage = product.images?.find(img => img.perspective === "front");
+        const thumbnailUrl = frontImage?.sizes?.find(size => size.size === "thumbnail")?.url;
 
         return {
+            id: item?.itemId,
             title: product.description || "",
             brand: product.brand || "",
+            description: "",
+            category: product.categories?.[0],
             price,
             unit: product.items?.[0]?.size || "N/A",
             pricePerUnit,
+            image_url: thumbnailUrl || null,
             location: location["name"]
         };
     });

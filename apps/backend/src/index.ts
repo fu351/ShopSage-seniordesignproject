@@ -104,29 +104,37 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
         if (!zipCode || !searchTerm) {
             return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
         }
-        const [krogerProducts, targetProducts, samsClubProducts] = await Promise.all([
-            Krogers(Number(zipCode), String(searchTerm), String(brand || "")),
-            getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price")),
-            SamsClubs(Number(zipCode), String(searchTerm))
+        const [krogerProducts, samsClubProducts, targetProducts] = await Promise.all([
+            Krogers(Number(zipCode?? 47906), String(searchTerm), String(brand || "")),
+            SamsClubs(Number(zipCode?? 47906), String(searchTerm)),
+            //getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
         ]);
 
         const normalizeProduct = (product: any, provider: string) => ({
-            title: product.title || product.name || "",
-            brand: product.brand || "",
-            price: product.price || null,
-            unit: product.unit || "N/A",
-            pricePerUnit: product.pricePerUnit || null,
-            location: product.location || "N/A",
-            provider,
+          id: product.id,
+          name: product.title || product.name || "",
+          brand: product.brand || "",
+          description: product.description || "",
+          category: product.category || "",
+          price: product.price || null,
+          unit: product.unit || "N/A",
+          pricePerUnit: product.pricePerUnit || null,
+          image_url: product.image_url || "",
+          location: product.location || "N/A",
+          provider
         });
+
+        //console.log(krogerProducts);
+        //console.log(samsClubProducts);
 
         const combinedProducts = [
             ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
-            ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
+            //...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
             ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
         ];
 
         combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+        console.log(combinedProducts);
         res.json(combinedProducts);
     } catch (error) {
         console.error("Error fetching combined products:", error.message);
@@ -233,6 +241,6 @@ app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, 'localhost', () => {
     console.log(`Server is running on port ${port}`);
 });
