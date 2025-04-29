@@ -241,6 +241,10 @@ app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
 });
 
 // Start the server
-app.listen(port, 'localhost', () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
 });
+
+//app.listen(port, 'localhost', () => {
+//  console.log(`Server is running on port ${port}`);
+//});
