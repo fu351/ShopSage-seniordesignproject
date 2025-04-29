@@ -6,7 +6,7 @@ Notes for prod vs dev:
 * To run backend locally, change 0.0.0.0 to localhost in backend/src/index.ts
 * To connect local frontend to local backend, you may need to add localhost:5000 to the url of api calls in page.js, because they were changed to work with the reverse proxy on EC2
     * i.e instead of `/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
-    * do `http//:localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
+    * do `http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`
 * This also means that when testing api endpoints running on EC2, you do not need to specify the port. Similar to how http:3.85.63.15 proxies to http:3.85.63.15:8080 in the browser, http:3.85.63.15/api proxies to http:3.85.63.15:5000/api in something like postman
 
 # Commands

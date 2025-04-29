@@ -27,27 +27,16 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        const [response_sams, response_kroger] = await Promise.all([
-          //fetch(`http://localhost:5000/api/samsclub?zipCode=47906&searchTerm=${encodeURIComponent(query)}`),
-          fetch(`/api/kroger?clubId=8169searchTerm=${encodeURIComponent(query)}`),
-          //fetch(`http://localhost:5000/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
-          fetch(`/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(query)}`)
-        ]);
+        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
-        if (!response_sams.ok || !response_kroger.ok) {
+        if (!response.ok) {
           throw new Error("Failed to fetch products");
         }
 
-        const [data_sams, data_kroger] = await Promise.all([
-          response_sams.json(),
-          response_kroger.json()
-        ]);
-
-        const combinedResults = [...data_sams, ...data_kroger];
-        const sortedResults = combinedResults.sort((a, b) => a.price - b.price);
-
+        const data = await response.json();
+        const sortedResults = data.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
         setSearchResults(sortedResults);
-        
       } catch (error) {
         console.error("Error fetching search results:", error);
       } finally {
@@ -120,18 +109,6 @@ export default function Home() {
                 return (
                   <div key={item.items?.[0]?.itemId} className="search-item">
                     <div className="search-image">
-                      {/* {item.images
-                        ?.find((img) => img.perspective === "front")
-                        ?.sizes.find((size) => size.size === "thumbnail")
-                        ?.url && (
-                        <img
-                          src={item.images
-                            .find((img) => img.perspective === "front")
-                            .sizes.find((size) => size.size === "thumbnail").url}
-                          alt="Product Thumbnail"
-                        />
-                      )}
-                      */}
                       {item.image_url && (
                         <img
                           src={item.image_url}
@@ -182,20 +159,6 @@ export default function Home() {
                   {items.map((item) => (
                     <div key={item.id} className="shopping-item">
                       <div className="image-placeholder">
-                        {/*
-                        {item.images
-                          ?.find((img) => img.perspective === "front")
-                          ?.sizes.find((size) => size.size === "thumbnail")
-                          ?.url && (
-                          <img
-                            src={item.images
-                              .find((img) => img.perspective === "front")
-                              .sizes.find((size) => size.size === "thumbnail")
-                              .url}
-                            alt="Product Thumbnail"
-                          />
-                        )}
-                        */}
                         {item.image_url && (
                           <img
                             src={item.image_url}

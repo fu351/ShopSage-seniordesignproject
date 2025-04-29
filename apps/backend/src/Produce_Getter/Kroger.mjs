@@ -147,38 +147,34 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
     const location = {
         "locationId": location_data.data.data[0].locationId,
         "name": location_data.data.data[0].name
-    }
+    };
 
     if (!location) {
         throw new Error("No valid location found.");
     }
 
     const products = await getProducts(brand, searchTerm, location, token);
-    
-    const details = products.map(p => {
-        const item = p.items?.[0];
-        const frontImage = p.images?.find(img => img.perspective === "front");
+    return products.map(product => {
+        const price = product.items?.[0]?.price?.regular || null;
+        const unit = parseFloat(product.items?.[0]?.size?.split(" ")[0]) || null;
+        const pricePerUnit = price && unit ? (price / unit).toFixed(2) : null;
+        const item = product.items?.[0];
+        const frontImage = product.images?.find(img => img.perspective === "front");
         const thumbnailUrl = frontImage?.sizes?.find(size => size.size === "thumbnail")?.url;
-    
+
         return {
             id: item?.itemId,
-            name: p.description,
+            title: product.description || "",
+            brand: product.brand || "",
             description: "",
-            category: p.categories?.[0],
-            price: item?.price?.regular?.toFixed(2),
+            category: product.categories?.[0],
+            price,
+            unit: product.items?.[0]?.size || "N/A",
+            pricePerUnit,
             image_url: thumbnailUrl || null,
-            source: "Kroger",
             location: location["name"]
         };
     });
-
-    //console.log(details)
-    return details;
-
-    //return products.map(product => ({
-    //    ...product,
-    //    location: location["name"]
-    //}));
 }
 
 export { Krogers };

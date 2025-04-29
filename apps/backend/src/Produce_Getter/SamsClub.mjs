@@ -29,7 +29,7 @@ async function getLocations(zipCode) {
           };
           
           const response = await axios.request(config);
-          console.log(JSON.stringify(response.data));
+          //console.log(JSON.stringify(response.data));
           return response;
     }
 
@@ -84,11 +84,13 @@ async function SamsClubs(zipCode=47906, searchTerm) {
         const details = Products.map(p => ({
             id: p.productId,
             name: p.descriptors?.name || null,
+            brand: "N/A",
             description: p.descriptors?.productdescription || null,
             category: p.category?.name || null,
             price: p.skus?.[0]?.clubOffer?.price?.finalPrice?.amount || null,
+            unit: "N/A",
+            pricePerUnit: "N/A",
             image_url: `https://scene7.samsclub.com/is/image/samsclub/${p.skus?.[0]?.assets?.image || ''}`,
-            source: "SamsClub",
             location: location["name"]
         }));
 
