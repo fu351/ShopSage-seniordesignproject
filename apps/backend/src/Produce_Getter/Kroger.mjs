@@ -169,10 +169,10 @@ async function Krogers(zipCode = 47906, searchTerm, brand = '') {
             description: "",
             category: product.categories?.[0],
             price,
-            unit: product.items?.[0]?.size || "N/A",
+            unit: product.items?.[0]?.size || unit || "each",
             pricePerUnit,
             image_url: thumbnailUrl || null,
-            location: location["name"]
+            location: "Payless Supermarket"
         };
     });
 }

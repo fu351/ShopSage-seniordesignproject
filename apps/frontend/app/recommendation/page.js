@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-export default function HomePage() {
+export default function RecommendationPage() {
   // State for current user, login modal, profile dropdown and authentication mode
   const [user, setUser] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,29 +36,29 @@ export default function HomePage() {
   };
 
   return (
-    <div className="home-container">
+    <div className="recommendation-container">
 
       {/* Header */}
-      <header className="home-header" style={{ position: "relative" }}>
-        <h1 className="home-title">Welcome to </h1>
-        <img src="/logo.png" alt="ShopSage Logo" className="home-logo" />
+      <header className="recommendation-header" style={{ position: "relative" }}>
+        <h1 className="recommendation-title">Your Shopping List</h1>
+        <img src="/logo.png" alt="ShopSage Logo" className="recommendation-logo" />
       </header>
 
       {/* Main Content */}
-      <main className="home-main">
-        <p className="home-description">
-          ShopSage helps you build and manage your grocery lists with ease. Search for items, organize your shopping list, and get a summary of your purchases.
+      <main className="recommendation-main">
+        <p className="recommendation-description">
+          Here are your recommended items based on your preferences and history.
         </p>
-        <div className="home-actions">
+        <div className="recommendation-actions">
           <Link href="/list_gen">
-            <button className="home-button secondary">Grocery Search</button>
+            <button className="recommendation-button secondary">Grocery Search</button>
           </Link>
-          <Link href="/recommendation">
-            <button className="home-button secondary">Shopping List</button>
+          <Link href="/history">
+            <button className="recommendation-button secondary">History</button>
           </Link>
           {!user ? (
             <button
-              className="home-button secondary"
+              className="recommendation-button secondary"
               onClick={() => {
                 setModalOpen(true);
                 setAuthMode("login");
@@ -69,16 +69,13 @@ export default function HomePage() {
           ) : (
             <div style={{ position: "relative", display: "inline-block" }}>
               <button
-                className="home-nav-button"
+                className="recommendation-nav-button"
                 onClick={() => setShowDropdown((prev) => !prev)}
               >
                 {user.username}
               </button>
               {showDropdown && (
                 <div className="auth-dropdown">
-                  <Link href="/history">
-                    <a>History</a>
-                  </Link>
                   <Link href="/preferences">
                     <a>Preferences</a>
                   </Link>
@@ -98,7 +95,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="home-footer">
+      <footer className="recommendation-footer">
         <p>&copy; {new Date().getFullYear()} ShopSage. All rights reserved.</p>
       </footer>
 
@@ -124,10 +121,10 @@ export default function HomePage() {
                     <input type="password" name="password" required />
                   </div>
                   <div className="modal-buttons">
-                    <button type="submit" className="home-button secondary">Login</button>
+                    <button type="submit" className="recommendation-button secondary">Login</button>
                     <button
                       type="button"
-                      className="home-button secondary"
+                      className="recommendation-button secondary"
                       onClick={() => setAuthMode("signup")}
                     >
                       Sign Up
@@ -152,7 +149,7 @@ export default function HomePage() {
                     <input type="password" name="confirmPassword" required />
                   </div>
                   <div className="modal-buttons">
-                    <button type="submit" className="home-button secondary">Sign Up</button>
+                    <button type="submit" className="recommendation-button secondary">Sign Up</button>
                   </div>
                 </form>
               </>

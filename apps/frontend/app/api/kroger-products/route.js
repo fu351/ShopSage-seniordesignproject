@@ -11,7 +11,7 @@ export async function GET(request) {
     const products = await Krogers(zipCode, searchTerm, brand);
     return NextResponse.json(products);
   } catch (error) {
-    console.error('Error fetching Kroger products:', error);
+    // Error fetching Kroger products
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

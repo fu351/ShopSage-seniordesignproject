@@ -1,4 +1,6 @@
 import axios from 'axios';
+// Add this import for decoding HTML entities
+import he from 'he';
 
 // Function to fetch products from Target API
 export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
@@ -38,7 +40,7 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
             const pricePerUnit = price && unit ? (price / unit).toFixed(2) : Infinity;
 
             return {
-                title: product.item?.product_description?.title || "",
+                title: he.decode(product.item?.product_description?.title || ""), // Decode HTML entities
                 brand: product.item?.primary_brand?.name || "",
                 price,
                 priceFormatted: product.price?.formatted_current_price || "",
@@ -49,11 +51,14 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
                 softBullets: product.item?.product_description?.soft_bullets?.bullets || [],
                 provider: "Target",
                 image_url: product.item?.enrichment?.images?.primary_image_url || "",
+                category: product.item?.product_classification.item_type.name || "",
+                id: product.tcin || "",
             };
         });
 
         cleanedProducts.sort((a, b) => (a[sortBy] ?? Infinity) - (b[sortBy] ?? Infinity));
-        console.log("Target products fetched successfully:", cleanedProducts);
+        // console.log("Target products fetched successfully:", products);
+        // console.log("Target products fetched successfully:", cleanedProducts);
         return cleanedProducts;
     } catch (error) {
         console.error("Error fetching Target products:", error.response?.data || error.message);
