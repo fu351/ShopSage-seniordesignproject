@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react"; // Import the reload icon
 import Link from "next/link";
 export default function Home() {
   const [shoppingList, setShoppingList] = useState([]);
@@ -27,8 +27,8 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
-        const response = await fetch(`/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        // const response = await fetch(`/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
@@ -38,7 +38,7 @@ export default function Home() {
         const sortedResults = data.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
         setSearchResults(sortedResults);
       } catch (error) {
-        console.error("Error fetching search results:", error);
+        // console.error("Error fetching search results:", error);
       } finally {
         setIsLoading(false);
       }
@@ -107,7 +107,8 @@ export default function Home() {
                   (existingItem) => existingItem.id === item.id
                 );
                 return (
-                  <div key={item.items?.[0]?.itemId} className="search-item">
+                  <div key={item.id} className="search-item">
+                    {/* Left Column: Image and Add Button */}
                     <div className="search-image">
                       {item.image_url && (
                         <img
@@ -115,23 +116,23 @@ export default function Home() {
                           alt="Product Thumbnail"
                         />
                       )}
+                      <button
+                        className={`add-button ${itemExists ? "disabled" : ""}`}
+                        onClick={!itemExists ? () => addToShoppingList(item) : undefined}
+                        disabled={itemExists}
+                      >
+                        {itemExists ? "Added" : "Add"}
+                      </button>
                     </div>
+
+                    {/* Right Column: Name, Price, and Location */}
                     <div className="search-details">
                       <span className="search-name">{item.name}</span>
                       <span className="search-price">
-                        ${item.price}
+                        ${item.price} / {item.unit || "each"}
                       </span>
                       <span className="search-location">{item.location}</span>
                     </div>
-                    <button
-                      className={`add-button ${itemExists ? "disabled" : ""}`}
-                      onClick={
-                        !itemExists ? () => addToShoppingList(item) : undefined
-                      }
-                      disabled={itemExists}
-                    >
-                      {itemExists ? "Added" : "Add"}
-                    </button>
                   </div>
                 );
               })
@@ -143,73 +144,69 @@ export default function Home() {
         <section className="shopping-list">
           <h2 className="shopping-header">Shopping List</h2>
           {(() => {
-            const groupedByCategory = shoppingList.reduce((acc, item) => {
-              const category = item.category || "Uncategorized";
-              if (!acc[category]) {
-                acc[category] = [];
+            const groupedByLocation = shoppingList.reduce((acc, item) => {
+              const location = item.location || "N/A";
+              if (!acc[location]) {
+                acc[location] = [];
               }
-              acc[category].push(item);
+              acc[location].push(item);
               return acc;
             }, {});
 
-            return Object.entries(groupedByCategory).map(
-              ([category, items]) => (
-                <div key={category} className="category-section">
-                  <h3 className="category-header">{category}</h3>
-                  {items.map((item) => (
-                    <div key={item.id} className="shopping-item">
-                      <div className="image-placeholder">
-                        {item.image_url && (
-                          <img
-                            src={item.image_url}
-                            alt="Product Thumbnail"
+            return Object.entries(groupedByLocation).map(([location, items]) => (
+              <div key={location} className="location-section">
+                <h3 className="location-header">{location}</h3>
+                {items.map((item) => (
+                  <div key={item.id} className="shopping-item">
+                    <div className="image-placeholder">
+                      {item.image_url && (
+                        <img
+                          src={item.image_url}
+                          alt="Product Thumbnail"
+                        />
+                      )}
+                    </div>
+                    <div className="item-details">
+                      <span className="item-name">{item.name}</span>
+                      <div className="price-quantity">
+                        <span className="price">${item.price}</span>
+                        <label>
+                          qty
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            min="1"
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                item.id,
+                                parseInt(e.target.value) || 1
+                              )
+                            }
                           />
-                        )}
+                        </label>
                       </div>
-                      <div className="item-details">
-                        <span className="item-name">{item.name}</span>
-                        <div className="price-quantity">
-                          <span className="price">
-                            ${item.price}
-                          </span>
-                          <label>
-                            qty
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              min="1"
-                              onChange={(e) =>
-                                handleQuantityChange(
-                                  item.id,
-                                  parseInt(e.target.value) || 1
-                                )
-                              }
-                            />
-                          </label>
-                        </div>
-                        <div className="item-location">
-                          {item.location || "N/A"}
-                        </div>
-                      </div>
-                      <div className="actions">
-                        <button
-                          className="view-similar"
-                          onClick={() => handleViewSimilar(item)}
-                        >
-                          Compare
-                        </button>
-                        <button
-                          className="remove-button"
-                          onClick={() => removeFromShoppingList(item.id)}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      <div className="item-location">
+                        {item.location || "N/A"}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )
-            );
+                    <div className="actions">
+                      <button
+                        className="reload-button"
+                        onClick={() => handleViewSimilar(item)}
+                      >
+                        View Similar
+                      </button>
+                      <button
+                        className="remove-button"
+                        onClick={() => removeFromShoppingList(item.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ));
           })()}
         </section>
 

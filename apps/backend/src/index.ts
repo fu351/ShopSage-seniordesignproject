@@ -109,9 +109,8 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
             SamsClubs(Number(zipCode?? 47906), String(searchTerm)),
             getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
         ]);
-
         const normalizeProduct = (product: any, provider: string) => ({
-          id: product.id,
+          id: `${provider}-${product.id || product.tcin || product.productId}`, // Ensure unique id by appending unique identifier
           name: product.title || product.name || "",
           brand: product.brand || "",
           description: product.description || "",
@@ -134,7 +133,7 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
         ];
 
         combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
-        console.log(combinedProducts);
+        // console.log(combinedProducts);
         res.json(combinedProducts);
     } catch (error) {
         console.error("Error fetching combined products:", error.message);

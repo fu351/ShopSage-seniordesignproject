@@ -88,7 +88,7 @@ async function SamsClubs(zipCode=47906, searchTerm) {
             description: p.descriptors?.productdescription || null,
             category: p.category?.name || null,
             price: p.skus?.[0]?.clubOffer?.price?.finalPrice?.amount || null,
-            unit: "N/A",
+            unit: "each",
             pricePerUnit: "N/A",
             image_url: `https://scene7.samsclub.com/is/image/samsclub/${p.skus?.[0]?.assets?.image || ''}`,
             location: location["name"]
