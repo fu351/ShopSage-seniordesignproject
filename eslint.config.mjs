@@ -22,13 +22,11 @@ export default [{
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:next/recommended"
+    "plugin:react-hooks/recommended"
 )), {
     plugins: {
         "@typescript-eslint": fixupPluginRules(typescriptEslint),
-        react: fixupPluginRules(react),
-        next: fixupPluginRules(next),
+        react: fixupPluginRules(react)
     },
 
     languageOptions: {
