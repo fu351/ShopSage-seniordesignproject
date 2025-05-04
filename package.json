@@ -2,7 +2,9 @@
   "name": "shopsage-seniordesignproject",
   "version": "1.0.0",
   "description": "Create a budgeting app that generates a shopping list that maximises cost savings based on user preference.",
-  "main": "index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "test": "jest",
     "build": "pnpm -r run build",
@@ -25,7 +27,6 @@
     "test:kroger": "jest apps/backend/src/Produce_Getter/__tests__/Kroger.test.ts"
   },
   "keywords": [],
-  "private": true,
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -58,8 +59,8 @@
     "dotenv": "^16.4.7",
     "lucide-react": "^0.475.0",
     "pm2": "^5.4.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "he": "^1.2.0"
   }
 }
