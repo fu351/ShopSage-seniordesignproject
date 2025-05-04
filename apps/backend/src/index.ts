@@ -98,18 +98,45 @@ app.get('/api/target', async (req: Request, res: Response) => {
 
 // Combined API endpoint
 app.get('/api/getAllProducts', async (req: Request, res: Response) => {
-    const { zipCode, searchTerm, brand, keyword, sortBy } = req.query;
+  const { zipCode, searchTerm, brand, keyword, sortBy } = req.query;
 
-    try {
-        if (!zipCode || !searchTerm) {
-            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
-        }
-        const [krogerProducts, samsClubProducts, targetProducts] = await Promise.all([
-            Krogers(Number(zipCode?? 47906), String(searchTerm), String(brand || "")),
-            SamsClubs(Number(zipCode?? 47906), String(searchTerm)),
-            getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"))
-        ]);
-        const normalizeProduct = (product: any, provider: string) => ({
+  try {
+      if (!zipCode || !searchTerm) {
+          return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+      }
+
+      const results = await Promise.allSettled([
+          (async () => {
+              try {
+                  return await Krogers(Number(zipCode ?? 47906), String(searchTerm), String(brand || ""));
+              } catch (error) {
+                  console.error("Error fetching Kroger products:", error.message);
+                  return [];
+              }
+          })(),
+          (async () => {
+              try {
+                  return await SamsClubs(Number(zipCode ?? 47906), String(searchTerm));
+              } catch (error) {
+                  console.error("Error fetching Sams Club products:", error.message);
+                  return [];
+              }
+          })(),
+          (async () => {
+              try {
+                  return await getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"));
+              } catch (error) {
+                  console.error("Error fetching Target products:", error.message);
+                  return [];
+              }
+          })()
+      ]);
+
+      const krogerProducts = results[0].status === "fulfilled" ? results[0].value : [];
+      const samsClubProducts = results[1].status === "fulfilled" ? results[1].value : [];
+      const targetProducts = results[2].status === "fulfilled" ? results[2].value : [];
+
+      const normalizeProduct = (product: any, provider: string) => ({
           id: `${provider}-${product.id || product.tcin || product.productId}`, // Ensure unique id by appending unique identifier
           name: product.title || product.name || "",
           brand: product.brand || "",
@@ -121,24 +148,20 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
           image_url: product.image_url || "",
           location: product.location || product.provider || "N/A",
           provider
-        });
+      });
 
-        //console.log(krogerProducts);
-        //console.log(samsClubProducts);
-        // console.log(targetProducts);
-        const combinedProducts = [
-            ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
-            ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
-            ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
-        ];
+      const combinedProducts = [
+          ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
+          ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
+          ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
+      ];
 
-        combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
-        // console.log(combinedProducts);
-        res.json(combinedProducts);
-    } catch (error) {
-        console.error("Error fetching combined products:", error.message);
-        res.status(500).json({ error: "Failed to fetch combined products." });
-    }
+      combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+      res.json(combinedProducts);
+  } catch (error) {
+      console.error("Error fetching combined products:", error.message);
+      res.status(500).json({ error: "Failed to fetch combined products." });
+  }
 });
 
 app.get('/', (req, res) => {
