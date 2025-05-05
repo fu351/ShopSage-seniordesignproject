@@ -75,7 +75,7 @@ async function getLocationId(zipCode, authToken) {
 async function getProducts(brand = '', searchTerm, location, authToken) {
     try {
         const locationId = location["locationId"]
-        console.log(`Fetching products for: ${searchTerm} at location ${locationId}`);
+        //console.log(`Fetching products for: ${searchTerm} at location ${locationId}`);
 
         const url = `https://api.kroger.com/v1/products`
         const headers = {

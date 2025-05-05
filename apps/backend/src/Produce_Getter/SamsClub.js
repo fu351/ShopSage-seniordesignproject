@@ -40,11 +40,22 @@ async function getLocations(zipCode) {
 }
 
 async function SamsClubs(zipCode=47906, searchTerm) {
-    const location_data = await getLocations(zipCode);
-    const location = {
-        "locationId": location_data.data[0].id,
-        "name": location_data.data[0].name,
-        "Address": location_data.data[0].address.address1
+    let location;
+    try {
+        const location_data = await getLocations(zipCode);
+
+        if (!location_data?.data || location_data.data.length === 0) {
+            throw new Error(`No Sam's Club locations found for ZIP code: ${zipCode}`);
+        }
+
+        location = {
+            locationId: location_data.data[0].id,
+            name: location_data.data[0].name,
+            Address: location_data.data[0].address?.address1 || "Unknown"
+        };
+    } catch (err) {
+        console.error("Location lookup failed:", err.message);
+        throw new Error("Location lookup failed. Please try a different ZIP code.");
     }
 
     try {
