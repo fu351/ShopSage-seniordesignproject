@@ -143,7 +143,8 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
 
       const krogerProducts = results[0].status === "fulfilled" ? results[0].value : [];
       const samsClubProducts = results[1].status === "fulfilled" ? results[1].value : [];
-      const targetProducts = results[2].status === "fulfilled" ? results[2].value : [];
+      const meijerProducts = results[2].status === "fulfilled" ? results[2].value : [];
+      const targetProducts = results[3].status === "fulfilled" ? results[2].value : [];
 
       const normalizeProduct = (product: any, provider: string) => ({
           id: `${provider}-${product.id || product.tcin || product.productId}`, // Ensure unique id by appending unique identifier
@@ -161,8 +162,9 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
 
       const combinedProducts = [
           ...krogerProducts.map((product: any) => normalizeProduct(product, "Kroger")),
-          ...targetProducts.map((product: any) => normalizeProduct(product, "Target")),
-          ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club"))
+          ...samsClubProducts.map((product: any) => normalizeProduct(product, "Sams Club")),
+          ...meijerProducts.map((product: any) => normalizeProduct(product, "Meijer")),
+          ...targetProducts.map((product: any) => normalizeProduct(product, "Target"))
       ];
 
       combinedProducts.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
