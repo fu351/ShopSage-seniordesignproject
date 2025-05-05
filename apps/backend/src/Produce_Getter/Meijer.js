@@ -26,12 +26,12 @@ async function getLocations(zipCode) {
   }
 
 async function Meijers(zipCode=47906, searchTerm) {
-    const location_data = await getLocations(zipCode);
+    /*const location_data = await getLocations(zipCode);
     const location = {
         "locationId": location_data.pointsOfService[0].mfcStoreId,
         "name": location_data.pointsOfService[0].displayName,
         "Address": location_data.pointsOfService[0].address
-    }
+    }*/
 
     //console.log(location["locationId"]);
     //console.log(location["name"]);
@@ -46,7 +46,7 @@ async function Meijers(zipCode=47906, searchTerm) {
                 "us": "web",
                 "page": 1,
                 "num_results_per_page": 52,
-                "filters[availableInStores]": location["locationId"],
+                "filters[availableInStores]": 319,
                 "sort_by": "relevance",
                 "sort_order": "descending",
                 "fmt_options[groups_max_depth]": 3,
@@ -83,7 +83,7 @@ async function Meijers(zipCode=47906, searchTerm) {
             unit: p.data.productUnit || null,
             pricePerUnit: "N/A",
             image_url: p.data.image_url,
-            location: location["name"]
+            location: "West Lafayette Meijer"
         }));
 
         // Sort by price and return the 10 cheapest options
