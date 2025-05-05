@@ -1,13 +1,19 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react"; // Import the reload icon
 import Link from "next/link";
+import config from "../../config";
 export default function Home() {
   const [shoppingList, setShoppingList] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [lastSearch, setLastSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [shoppingHistory, setShoppingHistory] = useState([]);
+
+  useEffect(() => {
+    fetchShoppingHistory
+  }, []);
 
   const handleQuantityChange = (id, newQuantity) => {
     setShoppingList((prevList) =>
@@ -27,8 +33,7 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
-        const response = await fetch(`/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
@@ -69,6 +74,64 @@ export default function Home() {
       }
       return prevList;
     });
+  };
+
+  const saveShoppingList = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("You must be logged in to save your shopping list.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/saveShoppingList`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ items: shoppingList }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to save shopping list");
+      }
+  
+      const data = await response.json();
+      alert("Shopping list saved successfully!");
+      fetchShoppingHistory(); // Refresh the shopping history
+    } catch (error) {
+      console.error("Error saving shopping list:", error);
+      alert("Could not save shopping list.");
+    }
+  };
+
+  const fetchShoppingHistory = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("You must be logged in to view your shopping history.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/getShoppingLists`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch shopping history");
+      }
+  
+      const data = await response.json();
+      console.log("Shopping History:", data);
+      // Update state to display the history
+      setShoppingHistory(data);
+    } catch (error) {
+      console.error("Error fetching shopping history:", error);
+      alert("Could not fetch shopping history.");
+    }
   };
 
   const removeFromShoppingList = (id) => {
@@ -208,6 +271,9 @@ export default function Home() {
               </div>
             ));
           })()}
+          <button onClick={saveShoppingList} className="save-button">
+            Save List
+          </button>
         </section>
 
         {/* Checkout Summary */}

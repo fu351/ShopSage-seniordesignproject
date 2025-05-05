@@ -1,6 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import config from "../config";
 
 export default function HomePage() {
   // State for current user, login modal, profile dropdown and authentication mode
@@ -9,30 +12,68 @@ export default function HomePage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
 
-  // Dummy handlers: replace with your actual API calls
-  const handleLogin = (e) => {
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token); // Decode the token to get user info
+        setUser({ username: decodedToken.username });
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        localStorage.removeItem("authToken"); // Remove invalid token
+      }
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // ...perform login authentication...
-    setUser({ username: e.target.username.value });
-    setModalOpen(false);
+    const { username, password } = e.target;
+
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/login`, {
+        username: username.value,
+        password: password.value,
+      });
+
+      // Save the token (e.g., in localStorage or state)
+      const { token } = response.data;
+      localStorage.setItem("authToken", token);
+
+      // Set the user state
+      const decodedToken = jwtDecode(token);
+      setUser({ username: decodedToken.username });
+      setModalOpen(false);
+    } catch (error) {
+      alert("Login failed: " + error.response?.data?.message || "Unknown error");
+    }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // ...perform signup logic and validations...
     const { username, password, confirmPassword } = e.target;
+
     if (password.value !== confirmPassword.value) {
       alert("Passwords do not match!");
       return;
     }
-    // Assume successful signup, automatically sign the user in
-    setUser({ username: username.value });
-    setModalOpen(false);
+
+    try {
+      await axios.post(`${config.apiBaseUrl}/register`, {
+        username: username.value,
+        password: password.value,
+      });
+
+      alert("Signup successful! You can now log in.");
+      setAuthMode("login");
+    } catch (error) {
+      alert("Signup failed: " + error.response?.data?.error || "Unknown error");
+    }
   };
 
   const handleSignOut = () => {
     setUser(null);
     setShowDropdown(false);
+    localStorage.removeItem("authToken"); // Clear the token
   };
 
   return (

@@ -257,6 +257,57 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
+app.post("/saveShoppingList", authenticateToken, async (req: AuthRequest, res: Response) => {
+  const { username } = req.user; // Extract username from the authenticated user
+  const { items } = req.body; // Shopping list items sent from the frontend
+
+  if (!items || !Array.isArray(items)) {
+    return res.status(400).json({ error: "Invalid shopping list data" });
+  }
+
+  const listId = `${username}-${Date.now()}`; // Unique list ID
+  const createdAt = new Date().toISOString();
+
+  const params = {
+    TableName: "ShoppingLists",
+    Item: {
+      username,
+      createdAt,
+      listId,
+      items,
+    },
+  };
+
+  try {
+    await dynamoDb.put(params).promise();
+    res.json({ message: "Shopping list saved successfully", listId });
+  } catch (error) {
+    console.error("Error saving shopping list:", error);
+    res.status(500).json({ error: "Could not save shopping list" });
+  }
+});
+
+app.get("/getShoppingLists", authenticateToken, async (req: AuthRequest, res: Response) => {
+  const { username } = req.user;
+
+  const params = {
+    TableName: "ShoppingLists",
+    KeyConditionExpression: "username = :username",
+    ExpressionAttributeValues: {
+      ":username": username,
+    },
+    ScanIndexForward: false, // Sort by `createdAt` in descending order
+  };
+
+  try {
+    const data = await dynamoDb.query(params).promise();
+    res.json(data.Items || []);
+  } catch (error) {
+    console.error("Error fetching shopping lists:", error);
+    res.status(500).json({ error: "Could not fetch shopping lists" });
+  }
+});
+
 // Protected Route
 app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
   res.json({ message: `Welcome ${req.user.username}! This is a protected route.` });
