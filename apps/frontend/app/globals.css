@@ -644,3 +644,27 @@ body {
 .signout-button:hover {
   background-color: #e76f51;
 }
+
+.history-container {
+  padding: 20px;
+}
+
+.history-item {
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.history-item h3 {
+  margin: 0 0 10px;
+}
+
+.history-item ul {
+  list-style: none;
+  padding: 0;
+}
+
+.history-item li {
+  margin-bottom: 5px;
+}
