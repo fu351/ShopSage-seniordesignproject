@@ -14,6 +14,7 @@ import AWS from 'aws-sdk';
 // Import Kroger dynamically if using .mjs
 const { Krogers } = await import("./Produce_Getter/Kroger.mjs");
 const { SamsClubs } = await import("./Produce_Getter/SamsClub.mjs")
+const { Meijers } = await import("./Produce_Getter/meijer.js")
 
 // Configure AWS
 AWS.config.update({
@@ -121,6 +122,14 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
                   console.error("Error fetching Sams Club products:", error.message);
                   return [];
               }
+          })(),
+          (async () => {
+            try {
+                return await Meijers(Number(zipCode ?? 47906), String(searchTerm));
+            } catch (error) {
+                console.error("Error fetching Meijers products:", error.message);
+                return [];
+            }
           })(),
           (async () => {
               try {
