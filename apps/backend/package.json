@@ -32,7 +32,7 @@
     "ts-node-dev": "^2.0.0"
   },
   "scripts": {
-    "build": "babel src --out-dir dist --extensions .ts,.js,.tsx,.jsx && shx cp src/Produce_Getter/Kroger.mjs dist/Produce_Getter/Kroger.mjs && shx cp src/Produce_Getter/SamsClub.mjs dist/Produce_Getter/SamsClub.mjs && shx cp src/Produce_Getter/Target.mjs dist/Produce_Getter/Target.mjs && shx cp src/Produce_Getter/meijer.mjs dist/Produce_Getter/meijer.mjs",
+    "build": "babel src --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "start": "node dist/index.js",
     "pm2:start": "pm2 start npm --name backend -- start",
     "pm2:stop": "pm2 stop backend",

@@ -2,7 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 // Removed the static import of Krogers to avoid conflict with the dynamic import below
-import { getTargetProducts } from "./Produce_Getter/Target.mjs";
+import { getTargetProducts } from "./Produce_Getter/Target.js";
 import readline from "readline";
 //import fs from 'fs';
 import cors from 'cors';
@@ -12,9 +12,9 @@ import bcrypt from "bcryptjs";
 import AWS from 'aws-sdk';
 
 // Import Kroger dynamically if using .mjs
-const { Krogers } = await import("./Produce_Getter/Kroger.mjs");
-const { SamsClubs } = await import("./Produce_Getter/SamsClub.mjs")
-const { Meijers } = await import("./Produce_Getter/meijer.js")
+const { Krogers } = await import("./Produce_Getter/Kroger.js");
+const { SamsClubs } = await import("./Produce_Getter/SamsClub.js")
+const { Meijers } = await import("./Produce_Getter/Meijer.js")
 
 // Configure AWS
 AWS.config.update({

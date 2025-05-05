@@ -33,8 +33,8 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
-        //const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
