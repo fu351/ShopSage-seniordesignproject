@@ -175,7 +175,7 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/api/', (req, res) => {
     res.send('Hello from the backend!');
 });
 
@@ -215,7 +215,7 @@ const registerHandler: RequestHandler = async (req, res) => {
 };
 
 // Register Route
-app.post("/register", registerHandler);
+app.post("/api/register", registerHandler);
 
 const loginHandler: RequestHandler = async (req, res) => {
   const { username, password } = req.body as { username: string; password: string };
@@ -245,7 +245,7 @@ const loginHandler: RequestHandler = async (req, res) => {
 };
 
 // Login Route
-app.post("/login", loginHandler);
+app.post("/api/login", loginHandler);
 
 // Authentication Middleware
 export interface AuthRequest extends Request {
@@ -268,7 +268,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
-app.post("/saveShoppingList", authenticateToken, async (req: AuthRequest, res: Response) => {
+app.post("/api/saveShoppingList", authenticateToken, async (req: AuthRequest, res: Response) => {
   const { username } = req.user; // Extract username from the authenticated user
   const { items } = req.body; // Shopping list items sent from the frontend
 
@@ -298,7 +298,7 @@ app.post("/saveShoppingList", authenticateToken, async (req: AuthRequest, res: R
   }
 });
 
-app.get("/getShoppingLists", authenticateToken, async (req: AuthRequest, res: Response) => {
+app.get("/api/getShoppingLists", authenticateToken, async (req: AuthRequest, res: Response) => {
   const { username } = req.user;
 
   const params = {
@@ -320,7 +320,7 @@ app.get("/getShoppingLists", authenticateToken, async (req: AuthRequest, res: Re
 });
 
 // Protected Route
-app.get("/protected", authenticateToken, (req: AuthRequest, res: Response) => {
+app.get("/api/protected", authenticateToken, (req: AuthRequest, res: Response) => {
   res.json({ message: `Welcome ${req.user.username}! This is a protected route.` });
 });
 
