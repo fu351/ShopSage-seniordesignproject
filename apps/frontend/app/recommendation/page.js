@@ -5,9 +5,11 @@ import { Trash2 } from "lucide-react";
 import { AuthContext } from "../AuthContext"; // adjust path if needed
 import axios from "axios";
 import config from "../../config";
+import { useRouter } from "next/router"; // Import useRouter for navigation
 
 export default function RecommendationPage() {
   const { user, login, logout } = useContext(AuthContext);
+  const router = useRouter();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -97,13 +99,19 @@ export default function RecommendationPage() {
       const token = localStorage.getItem("authToken"); // Consider storing in AuthContext instead
       if (!token) return alert("You must be logged in to save your list.");
 
+      // Add default quantity of 1 to each item
+      const listWithQuantities = shoppingList.map((item) => ({
+        ...item,
+        quantity: 1, // Default quantity
+      }));
+
       const response = await fetch(`${config.apiBaseUrl}/saveShoppingList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ items: shoppingList }),
+        body: JSON.stringify({ items: listWithQuantities }),
       });
 
       if (!response.ok) throw new Error("Failed to save shopping list");
@@ -112,6 +120,13 @@ export default function RecommendationPage() {
     } catch (err) {
       console.error("Error saving list:", err);
       alert("Could not save list.");
+    }
+  };
+
+  const useList = (shoppingList) => {
+    if (typeof window !== "undefined") {
+      const encodedList = encodeURIComponent(JSON.stringify(shoppingList));
+      router.push(`/list_gen?list=${encodedList}`);
     }
   };
 
@@ -278,9 +293,9 @@ export default function RecommendationPage() {
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
                     <button
                       className="use-list-button home-button hover-orange"
-                      onClick={() => saveShoppingList(results.krogerList)}
+                      onClick={() => useList(results.krogerList)}
                     >
-                      Save to History
+                      Use List
                     </button>
                   </div>
                 </div>
@@ -320,9 +335,9 @@ export default function RecommendationPage() {
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
                     <button
                       className="use-list-button home-button hover-orange"
-                      onClick={() => saveShoppingList(results.meijerList)}
+                      onClick={() => useList(results.meijerList)}
                     >
-                      Save to History
+                      Use List
                     </button>
                   </div>
                 </div>
@@ -362,9 +377,9 @@ export default function RecommendationPage() {
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
                     <button
                       className="use-list-button home-button hover-orange"
-                      onClick={() => saveShoppingList(results.targetList)}
+                      onClick={() => useList(results.targetList)}
                     >
-                      Save to History
+                      Use List
                     </button>
                   </div>
                 </div>
