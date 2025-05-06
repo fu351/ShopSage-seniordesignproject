@@ -49,55 +49,78 @@ app.get('/api/example', (req: Request, res: Response) => {
   res.send('Hello, this is an example endpoint!');
 });
 
-// Kroger API endpoint
+// Utility function to handle timeouts
+const withTimeout = (promise: Promise<any>, ms: number) => {
+  const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+};
+
+// Kroger API endpoint with timeout handling
 app.get('/api/kroger', async (req: Request, res: Response) => {
-    const { zipCode, searchTerm, brand } = req.query;
+  const { zipCode, searchTerm, brand } = req.query;
 
-    try {
-        if (!zipCode || !searchTerm) {
-            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
-        }
-        const products = await Krogers(Number(zipCode ?? 47906), String(searchTerm), String(brand || ""));
-        res.json(products);
-    } catch (error) {
-        console.error("Error fetching products from Kroger API:", error);
-        res.status(500).json({ error: "Failed to fetch products from Kroger API" });
-    }
+  try {
+      if (!zipCode || !searchTerm) {
+          return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+      }
+
+      const products = await withTimeout(
+          Krogers(Number(zipCode ?? 47906), String(searchTerm), String(brand || "")),
+          5000 // Timeout after 5 seconds
+      );
+
+      res.json(products);
+  } catch (error) {
+      console.error("Error fetching products from Kroger API:", error.message);
+      res.status(500).json({ error: error.message || "Failed to fetch products from Kroger API" });
+  }
 });
 
-// Sams Club API endpoint
+// Sams Club API endpoint with timeout handling
 app.get('/api/samsclub', async (req: Request, res: Response) => {
-    const { zipCode, searchTerm } = req.query;
+  const { zipCode, searchTerm } = req.query;
 
-    try {
-        if (!zipCode || !searchTerm) {
-            return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
-        }
-        const products = await SamsClubs(Number(zipCode), String(searchTerm));
-        res.json(products);
-    } catch (error) {
-        console.error("Error fetching products from Sams Club API:", error);
-        res.status(500).json({ error: "Failed to fetch products from Sams Club API" });
-    }
+  try {
+      if (!zipCode || !searchTerm) {
+          return res.status(400).json({ error: "Missing required query parameters: zipCode and searchTerm" });
+      }
+
+      const products = await withTimeout(
+          SamsClubs(Number(zipCode), String(searchTerm)),
+          5000 // Timeout after 5 seconds
+      );
+
+      res.json(products);
+  } catch (error) {
+      console.error("Error fetching products from Sams Club API:", error.message);
+      res.status(500).json({ error: error.message || "Failed to fetch products from Sams Club API" });
+  }
 });
 
-// Target API endpoint
+// Target API endpoint with timeout handling
 app.get('/api/target', async (req: Request, res: Response) => {
-    const { keyword, zipCode, sortBy } = req.query;
+  const { keyword, zipCode, sortBy } = req.query;
 
-    try {
-        if (!keyword || !zipCode) {
-            return res.status(400).json({ error: "Missing required query parameters: keyword and zipCode" });
-        }
-        const products = await getTargetProducts(String(keyword), String(zipCode), String(sortBy || "price"));
-        res.json(products);
-    } catch (error) {
-        console.error("Error fetching Target products:", error.message);
-        res.status(500).json({ error: "Failed to fetch Target products." });
-    }
+  try {
+      if (!keyword || !zipCode) {
+          return res.status(400).json({ error: "Missing required query parameters: keyword and zipCode" });
+      }
+
+      const products = await withTimeout(
+          getTargetProducts(String(keyword), String(zipCode), String(sortBy || "price")),
+          5000 // Timeout after 5 seconds
+      );
+
+      res.json(products);
+  } catch (error) {
+      console.error("Error fetching Target products:", error.message);
+      res.status(500).json({ error: error.message || "Failed to fetch Target products." });
+  }
 });
 
-// Combined API endpoint
+// Combined API endpoint with timeout handling
 app.get('/api/getAllProducts', async (req: Request, res: Response) => {
   const { zipCode, searchTerm, brand, keyword, sortBy } = req.query;
 
@@ -107,38 +130,22 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
       }
 
       const results = await Promise.allSettled([
-          (async () => {
-              try {
-                  return await Krogers(Number(zipCode ?? 47906), String(searchTerm), String(brand || ""));
-              } catch (error) {
-                  console.error("Error fetching Kroger products:", error.message);
-                  return [];
-              }
-          })(),
-          (async () => {
-              try {
-                  return await SamsClubs(Number(zipCode ?? 47906), String(searchTerm));
-              } catch (error) {
-                  console.error("Error fetching Sams Club products:", error.message);
-                  return [];
-              }
-          })(),
-          (async () => {
-            try {
-                return await Meijers(Number(zipCode ?? 47906), String(searchTerm));
-            } catch (error) {
-                console.error("Error fetching Meijers products:", error.message);
-                return [];
-            }
-          })(),
-          (async () => {
-              try {
-                  return await getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price"));
-              } catch (error) {
-                  console.error("Error fetching Target products:", error.message);
-                  return [];
-              }
-          })()
+          withTimeout(
+              Krogers(Number(zipCode ?? 47906), String(searchTerm), String(brand || "")),
+              5000 // Timeout after 5 seconds
+          ),
+          withTimeout(
+              SamsClubs(Number(zipCode ?? 47906), String(searchTerm)),
+              5000 // Timeout after 5 seconds
+          ),
+          withTimeout(
+              Meijers(Number(zipCode ?? 47906), String(searchTerm)),
+              5000 // Timeout after 5 seconds
+          ),
+          withTimeout(
+              getTargetProducts(String(keyword || searchTerm), String(zipCode), String(sortBy || "price")),
+              5000 // Timeout after 5 seconds
+          )
       ]);
 
       const krogerProducts = results[0].status === "fulfilled" ? results[0].value : [];
@@ -171,7 +178,7 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
       res.json(combinedProducts);
   } catch (error) {
       console.error("Error fetching combined products:", error.message);
-      res.status(500).json({ error: "Failed to fetch combined products." });
+      res.status(500).json({ error: error.message || "Failed to fetch combined products." });
   }
 });
 

@@ -2,6 +2,14 @@ import axios from 'axios';
 // Add this import for decoding HTML entities
 import he from 'he';
 
+// Utility function to handle timeouts
+const withTimeout = (promise, ms) => {
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    );
+    return Promise.race([promise, timeout]);
+};
+
 // Function to fetch products from Target API
 export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
     const baseUrl = "https://redsky.target.com/redsky_aggregations/v1/web/plp_search_v2";
@@ -32,8 +40,15 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
     };
 
     try {
-        const response = await axios.get(baseUrl, { params, headers });
+        const response = await withTimeout(axios.get(baseUrl, { params, headers }), 5000); // Timeout after 5 seconds
+
+        if (!response.data || !response.data.data || !response.data.data.search || !response.data.data.search.products) {
+            console.warn("No products found for the given keyword:", keyword);
+            return [];
+        }
+
         const products = response.data.data.search.products;
+
         const cleanedProducts = products.map(product => {
             const price = product.price?.current_retail || null;
             const unit = parseFloat(product.price?.formatted_unit_price?.split(" ")[0]) || Infinity;
@@ -57,11 +72,15 @@ export async function getTargetProducts(keyword, zipCode, sortBy = "price") {
         });
 
         cleanedProducts.sort((a, b) => (a[sortBy] ?? Infinity) - (b[sortBy] ?? Infinity));
-        // console.log("Target products fetched successfully:", products);
-        // console.log("Target products fetched successfully:", cleanedProducts);
         return cleanedProducts;
     } catch (error) {
-        console.error("Error fetching Target products:", error.response?.data || error.message);
-        throw new Error("Failed to fetch Target products.");
+        if (error.code === 'ECONNABORTED') {
+            console.error("Request timed out:", error.message);
+        } else if (error.response) {
+            console.error("Error response from Target API:", error.response.data || error.message);
+        } else {
+            console.error("Unexpected error fetching Target products:", error.message);
+        }
+        throw new Error("Failed to fetch Target products. Please try again later.");
     }
 }

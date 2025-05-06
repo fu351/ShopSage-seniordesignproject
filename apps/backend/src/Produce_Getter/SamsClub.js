@@ -1,9 +1,18 @@
 import 'dotenv/config';
 import axios from 'axios';
 
+// Utility function to handle timeouts
+const withTimeout = (promise, ms) => {
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    );
+    return Promise.race([promise, timeout]);
+};
+
+// Function to fetch store locations
 async function getLocations(zipCode) {
     try {
-        let config = {
+        const config = {
             method: 'get',
             maxBodyLength: Infinity,
             url: `https://www.samsclub.com/api/node/vivaldi/browse/v2/clubfinder/list`,
@@ -12,34 +21,22 @@ async function getLocations(zipCode) {
                 nbrOfStores: 20,
                 singleLineAddr: zipCode
             },
-            headers: { 
-              'accept': 'application/json, text/plain, */*', 
-              'accept-language': 'en-US,en;q=0.9', 
-              'priority': 'u=1, i', 
-              'referer': 'https://www.samsclub.com/?gad_source=1&gclid=Cj0KCQjw2N2_BhCAARIsAK4pEkVcAB7FB-xhSu6fLW0AYsmgNgBmkm3OjIzFQBE9eeW9lSOhwarCT0caAiDVEALw_wcB', 
-              'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"', 
-              'sec-ch-ua-mobile': '?0', 
-              'sec-ch-ua-platform': '"Windows"', 
-              'sec-fetch-dest': 'empty', 
-              'sec-fetch-mode': 'cors', 
-              'sec-fetch-site': 'same-origin', 
-              'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36', 
-              'Cookie': 'vtc=TBJ8X70A34BZEe2OMN0nAI; s_ecid=MCMID%7C61674181177848360680464918353110227399; _pxvid=62a9cd9a-1581-11f0-b3db-7b859751af0b; __pxvid=62da4d7b-1581-11f0-bc3e-7ed2bbdac79d; _gcl_au=1.1.575488038.1744230590; astract=ca-ae69f7c7-1c36-47b4-95f4-f8a808b4345e; acstkn=74:11#566559635#7=843715306_1744230590555; QuantumMetricUserID=05f3816dd5a237c8f40e55a4c9e08ca5; _mibhv=anon-1744230592015-2839090225_4591; rmStore=dmid:8096; _fbp=fb.1.1744230592202.883505408732895125; _tt_enable_cookie=1; _ttp=01JRE3XBQARE1FRE5HBJN0RV21_.tt.1; _pin_unauth=dWlkPU9USXdZVFF6WVdJdE0yUmhOUzAwWlRaakxUazROVFF0TnpVNE1UZzRNVEE0T1dNeQ; crl8.fpcuid=20007da9-85c5-4d01-be5a-f97f9f8133ff; ttcsid=1744241022612.2.1744241022613; ttcsid_C95MTH3C77U5QKC67MB0=1744241022611.2.1744241022967; sxp-rl-SAT_CME-rn=33; sxp-rl-SAT_DISABLE_SYN_PREQUALIFY-rn=13; sxp-rl-SAT_GEO_LOC-rn=91; sxp-rl-SAT_NEW_ORDERS_UI-rn=44; sxp-rl-SAT_ORDER_REPLACEMENT-rn=56; sxp-rl-SAT_REORDER_V4-rn=66; sxp-rl-SCR_CANCEL_ORDER_V3-rn=64; sxp-rl-SCR_CANRV4-rn=47; sxp-rl-SCR_NEXT3-rn=94; sxp-rl-SCR_OHLIMIT-rn=58; sxp-rl-SCR_SHAPEJS-rn=39; sxp-rl-SCR_VERIFICATION_V4-rn=84; sxp-rl-SAT_ADD_ITEM-rn=58; sxp-rl-SCR_RYE-rn=97; sxp-rl-SCR_SCRE-rn=94; sxp-rl-SCR_TII-rn=50; SAT_WPWCNP=1; bstc=XF_CVVh83VwU3n5_yWh0yA; xpa=1dRg9|t5Tz_; exp-ck=1dRg92t5Tz_1; SAT_NEO_EXPO=1; SAT_CHATBOT=0; sxp-rl-SAT_CME-c=r|1|100; SAT_CME=1; sxp-rl-SAT_DISABLE_SYN_PREQUALIFY-c=r|1|0; SAT_DISABLE_SYN_PREQUALIFY=0; sxp-rl-SAT_GEO_LOC-c=r|1|50; SAT_GEO_LOC=0; sxp-rl-SAT_NEW_ORDERS_UI-c=r|1|0; SAT_NEW_ORDERS_UI=0; sxp-rl-SAT_ORDER_REPLACEMENT-c=r|1|0; SAT_ORDER_REPLACEMENT=0; sxp-rl-SAT_REORDER_V4-c=r|1|0; SAT_REORDER_V4=0; sxp-rl-SCR_CANCEL_ORDER_V3-c=r|1|0; SCR_CANCEL_ORDER_V3=0; sxp-rl-SCR_CANRV4-c=r|1|100; SCR_CANRV4=1; sxp-rl-SCR_NEXT3-c=r|1|100; SCR_NEXT3=1; sxp-rl-SCR_OHLIMIT-c=r|1|0; SCR_OHLIMIT=0; sxp-rl-SCR_SHAPEJS-c=r|1|0; SCR_SHAPEJS=0; sxp-rl-SCR_VERIFICATION_V4-c=r|1|0; SCR_VERIFICATION_V4=0; sxp-rl-SAT_ADD_ITEM-c=r|1|100; SAT_ADD_ITEM=1; sxp-rl-SCR_RYE-c=r|1|100; SCR_RYE=1; sxp-rl-SCR_SCRE-c=r|1|100; SCR_SCRE=1; sxp-rl-SCR_TII-c=r|1|100; SCR_TII=1; xpm=1%2B1744293191%2BTBJ8X70A34BZEe2OMN0nAI~%2B1; pxcts=260660c0-1613-11f0-9655-3d34d0dd1e48; sams-pt=eyJ4NXQiOiJzOXN6ZUptWldjMWhRYktIOUVqSmNoOUZkTkEiLCJraWQiOiJCM0RCMzM3ODk5OTk1OUNENjE0MUIyODdGNDQ4Qzk3MjFGNDU3NEQwIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJleHQiOiI4SkZtWW1KbE1HRTBNREV4T0dFNVkyUm1ZbUptTURGaU0yTXpOakk0TnpFME56Qm1OalUxWVRZMVlXWTJOekprTlRBMlpqa3daamsyTnpBeU9XVTRPV0ZpT1RnME5XWmhPVFpqWVRFNFlqTmpNRFUzWmpkak5UTTVZVEZrTkRrd1kyWmpZVE14Wm1NNFlUSmlOREJsWldWa1l6UmxZVGM1WVRNNE4yWTVNalkyTW1NM01tWXlNV0V5TmpReFlXWm1PVEkyTURNelpqazFZams1WldKaU5UZ3oiLCJ2ZXIiOiIxLjAiLCJjaGkiOiJkZXNrdG9wIiwiZmJ0IjpmYWxzZSwiYWhiIjp7InYiOnRydWUsInAiOltdfSwib3ZyZCI6ZmFsc2UsInNoYSI6eyJ2Ijp0cnVlLCJwIjpbXX0sImV4cCI6MTc0NDI5Njc5NCwiaWF0IjoxNzQ0MjkzMTk0LCJuYmYiOjE3NDQyOTMxOTQsImlzcyI6Imh0dHBzOi8vdGl0YW4uc2Ftc2NsdWIuY29tL2M4Y2MwNzBlLWRmZWQtNDVjOS1iZGE1LTI5ZDAwMTIxYWNiYi92Mi4wLyIsImp0aSI6IjZkNjNkM2ZjLTFhMzctNGVkZC1iYmNkLTdiMzM4M2Q5MDk3NiJ9.sObjUuhvOujen2-EuLC063JzvwleUB3o8SL_NMuiRbbEr2nknbvYvT0LWtfFw_C7NrqdGCgWYGwEgxswGe0ZVRaQ0InGBLP9R42SwyYEUbbbwRXp272E3kYPnDGIgapz_Xkn9xZzDVMtoyDqZy5JsNBlQTI-KxN0f07TmmHb177ckIgCRNXI0ECAstC1H5GGhOdjuEiOnKRva5U10khX83mJz-98XO8qhQemNYFWweCZiBtGX6_II841FcF527g20fSxcnLiser5SNGnovm1DZYheKXbIx1HFcpCyhaVdUT6WsZStaw63k3SucVVgiCg6VuOhygMez2UVVsF72F6O17OcoB6s6XGTVYZJ2Psg9FT27NW5pkl4UKmDtdXOBeGR55OgNRTT-u4CaF2DYYfPPc53tr5T3mxRQdDWo3j6OYyPbXeM2ErsC-PEhAjx2TOcGfJNZwcLOiS_rTY38GTAQikCsHyQEGJgYFSAs56YQFgEa-oCC3THDWkg_hzbyXDNyVJ7L6tEsIEWxV5tJ_qwHUpGpPBXZRboZL4FY_xAWV-cbFut_9LfNlbPAx5ZOaOqBlKpWe9bzU4sZ4tzZDwjGVkMXsvEIo-eQtiiI_q5_TaICBusj-OxYW8-qvrSyhVTl6pf-h1VVlG5UAtuZlNBYsneFSqQ78Nh2Cm-zIu_jc; AMCVS_B98A1CFE53309C340A490D45%40AdobeOrg=1; AMCV_B98A1CFE53309C340A490D45%40AdobeOrg=1585540135%7CMCIDTS%7C20188%7CMCMID%7C61674181177848360680464918353110227399%7CMCAAMLH-1744897993%7C7%7CMCAAMB-1744897993%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1744300393s%7CNONE%7CMCAID%7CNONE%7CvVersion%7C4.4.0; s_cc=true; AUTOSELECTCLUB=1; _gcl_gs=2.1.k1$i1744293189$u107973760; rcs=eF5j4cotK8lMETA0NzbTNdQ1ZClN9jBKs0gzSUkz001NNDTTNUkxTdJNNLQw1k1JNDO1ME9LNbIwtgQAn6gOqw; QuantumMetricSessionID=06a3397b793077dfd4ee1c4a8e92849b; __gads=ID=992c602eebe0fd4b:T=1744230591:RT=1744293198:S=ALNI_MZTC9PoKVI1QW8xnyI_SDug1MfArQ; __gpi=UID=0000108febc26f53:T=1744230591:RT=1744293198:S=ALNI_MYpvw5ASiaU764gtcqqOqXjgPV9nQ; __eoi=ID=9fd9b35d495b98a3:T=1744230591:RT=1744293198:S=AA-Afja6IkgedHZht1Dka6PMKbCA; SSLB=0; bm_mi=D4AE655028D78A1842E73443448892C2~YAAQL6g4F1l24BOWAQAAshL7Hxtj70EoFQiESOR4ZRpeFR/IKS4vjLrKj9RhYnsn6i5YRhWNZwtgGua/Gmv4TZkEeg5VVZGD7HIXarn6XaacsrkysufoA4FmyNKju6sYdywXkmFujCN0pbbaBmFS2LpLllfNTiogmz5VALo5+1qDfPlOMCVVAhOjSPpQaU0lp4/WWGDML7zAgQtJYLU3sNj3TSgTjb2EWNGDAmJM+unlOxFroKx9FEbGHjfNw8D6CwhBojfENGFXYRnCfU0ZfFD+/7Od++EMGVqVdVDJ15H5X5XvT4QawmO01Bpz/J8=~1; ak_bmsc=98A6AB9578D02426455B9A2AFA27094B~000000000000000000000000000000~YAAQL6g4F5N24BOWAQAAchb7Hxs93UXecbYhys0REKVH1Rs7PDO1dzZ4jEIe+hFtnzWUN7ZLT43HhwKpSOdfbXTfz/Gu8Y7kmxYqAkBo/7W+88sX8CErtQmcIwQbeEn0MJNlj3sU9EbVvyMrGVKn5T0OOEMPNxJPOlYf1HmjNV4opELZcYnMPKUFFC1MxISxoeherde1aHDf2XFzU+Bs/OGni2QDpkycmqy1IcJ+WggBIrLu2Ey3MDJh5wiFjKYelCr2RetKG2OnOLkFFHTCY251uh/xwkt8QHOePgBJIc3RUq+3Y/ICCxOdjJOrfYu/xXIbiOxk6NjqGgfV8wPHjySvrQDM6XzuFLVnYecTiOsnsvp0UFi56lTxRTT/vFjZVOpSa1abCnz4gKomRkVMlK+YTM4h8llYRyEFJtz5fCY1cNB8tFxud36R/lk2MCQ3WpP4n+oiSfHSTLk/U00XLj7ZTD7fCR1MnmY4aOBNvF2Hgo56URrx; xptwj=js:1035c3de01c5084753fa:u+GqcxFekERbD2o+f8YObgfF74D1o8z/K9Ci6G9hbE0YUEQK8wOhKo14IzOJwS7VHlUw9tZJIw3tORDqnbP0VQ4oX0FkATPHNjOfq11qEbE7B/u3beDGLK0w12Y=; _gcl_aw=GCL.1744293270.Cj0KCQjw2N2_BhCAARIsAK4pEkVcAB7FB-xhSu6fLW0AYsmgNgBmkm3OjIzFQBE9eeW9lSOhwarCT0caAiDVEALw_wcB; _px3=fa2ebda717113527ebb3a5306cc4fbde450f3e4a13e3c19c46f0be0e664dacce:eX9Zymh+kjk5MC4DGs7iJt5JKrd7uCMw9QCX10n53KXz8QpM3APae+5oeJpmC051jIJSZUicZktt3o1nCMIViw==:1000:hxP6iJI1eRTUot+fNfeSRU/CMEY9ipFUcyzBh6mcGyS8ykXK05MPRZWykfXjj2XFEzF1SO3sTvXRY51icEYW3UlLPKriUnng+IMJuRZ32sUaQLhSoN0ZsddnyIFuXq1i7Hb+zToYddDn+nh37L42bNNxh0NcisxQmv8Zt+p5/UhcHBWsCUBqUUyXf7bAiJsKz/Wb3egX/73qT+Wjhm9i/z1FGgm6Uiir4eB1pSpU5GY=; cto_bundle=XDi6mV9RNDlQY25penF1Z080dXc0V2l2ZTBoZlU4RE00M0hNWTRCellKWFBPU0RUQ3pXc0swMWV6Nkh4UzdsN2VlcTk2V2hWMENDRkFMZXltMjJRJTJGQ3g0WGd1cFVLSHp5dnZOVVhUWWgyU1ZzJTJGMW02JTJCU0VzWVN1MTlPMERlVzlLM0RLajNGRE9XSlprZ2QxUnRWM2E5WHhudjRlMGJNYXoxemVYYWJoQm9oYTQlMkJPOGFGZU5YUFBqaGpwTkpMY3FDNVloQ3QzbEtIdlphZWZUODFwU3EzTTFCdFl1R0RKbjNXJTJCSmpFQmVFWTZkVm5NdlFDM2p6d0tRZVhnU3lEZnkyVFRSVFRZSmp0QzVScEtJRmclMkI3RnNsZkM4dyUzRCUzRA; seqnum=12; akavpau_P1_Sitewide=1744293876~id=5dae4f19442ef4e6e4f01783284fd1aa; TS017c4a41=01e57ed78ddcdb9aa6d79e6e5be1109dc5f11223d658945be3387c9024bad16a98cfa8966810ed2018e2f25b65ace4248b8c93f0bd; TS01b1959a=01e57ed78ddcdb9aa6d79e6e5be1109dc5f11223d658945be3387c9024bad16a98cfa8966810ed2018e2f25b65ace4248b8c93f0bd; TS017260c8=01e57ed78ddcdb9aa6d79e6e5be1109dc5f11223d658945be3387c9024bad16a98cfa8966810ed2018e2f25b65ace4248b8c93f0bd; TSbdf847b3027=08922cdf3eab200058127330e800882c6357264b0beab6932e14e08bb420ca092bd303d3b2db5ef608eb9bf1791130006713b703f8d4d5116243681140395e5d0ce9d9362c878e2307e05c46815b89e226b258f19befbf0cee210e70706ea3af; bm_sv=B1FCF8D27773232EB1837EFBDF595389~YAAQL6g4F5534BOWAQAAgir7HxuiQcHgI5PJYv9lLjEIt70JOjJlGnrCkHVwHhBu80fz6rLkJuCeAWIVoOmZhLt7dqC8fh72lIDoPeXoyx79S0pH4P/BQsT00Gtnz9zkvqbn6jKeqaKFz136+h0ehA/k+n79gPfW4eQT6MkrJ9HpNRY3u3ocrqOD+EyA6UCK0KbpFXqW5tBPHkM9LfmZZ7VHYnhVtm26suG+1QNc1ioHl1+Sqjorswn7FmM+Q9sm59ov~1; _uetsid=640b90c0158111f0a7eb7d3691349813; _uetvid=640b8ab0158111f0b5f2f72bfac517b4; smtrrmkr=638798900776319944%5E01961c3e-bce8-47ce-8052-3fb53842744f%5E01961ffa-0829-4a40-b11a-1a4d1fc0092c%5E0%5E52.119.103.33; _pxde=8902a185d2917e73821c2d1312f50e678ecead85cff7b8ada5dce1f933e00ba9:eyJ0aW1lc3RhbXAiOjE3NDQyOTMyNzk0MjJ9; s_sq=samclub3prod%3D%2526c.%2526a.%2526activitymap.%2526page%253Dhomepage%2526link%253DFind%2526region%253DBODY%2526pageIDType%253D1%2526.activitymap%2526.a%2526.c%2526pid%253Dhomepage%2526pidt%253D1%2526oid%253DFind%2526oidt%253D3%2526ot%253DSUBMIT; TS017260c8=0151cb3bb582fb97b951d1b9f5afa99459e09da68dac298fee6ebf28b2dcfb782c9f497eed2dbc377df76ae20593f53a1370ac5b81; TS01b1959a=0151cb3bb582fb97b951d1b9f5afa99459e09da68dac298fee6ebf28b2dcfb782c9f497eed2dbc377df76ae20593f53a1370ac5b81; bm_sv=B1FCF8D27773232EB1837EFBDF595389~YAAQNKg4FyDapQuWAQAAX5EAIBvEeKlUhQM9bvPVJuUMDqIrApt9ru7WqlP9NBPKTiFLuVxyHRxtdvS2qwtDxERfOrr1wksry6kkMdLWVP9TiOX0Fd7gCTv3xVTj8P2aNI3V3ygpFgjeZSUKkfdD9RPvIyIMl/9QNLwHSwU/RpMIzO2nPacw7li35724nBelWvNkOWscE55ZKx44oSOkyRKyWFFaOF5tYtkjOustOyniFIV200y0lQHe4NqRr9J6N/yt~1; bstc=XF_CVVh83VwU3n5_yWh0yA; exp-ck=1dRg92t5Tz_1; sams-pt=eyJ4NXQiOiJzOXN6ZUptWldjMWhRYktIOUVqSmNoOUZkTkEiLCJraWQiOiJCM0RCMzM3ODk5OTk1OUNENjE0MUIyODdGNDQ4Qzk3MjFGNDU3NEQwIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJleHQiOiI4SkZtWW1KbE1HRTBNREV4T0dFNVkyUm1ZbUptTURGaU0yTXpOakk0TnpFME56Qm1OalUxWVRZMVlXWTJOekprTlRBMlpqa3daamsyTnpBeU9XVTRPV0ZpT1RnME5XWmhPVFpqWVRFNFlqTmpNRFUzWmpkak5UTTVZVEZrTkRrd1kyWmpZVE14Wm1NNFlUSmlOREJsWldWa1l6UmxZVGM1WVRNNE4yWTVNalkyTW1NM01tWXlNV0V5TmpReFlXWm1PVEkyTURNelpqazFZams1WldKaU5UZ3oiLCJ2ZXIiOiIxLjAiLCJjaGkiOiJkZXNrdG9wIiwiZmJ0IjpmYWxzZSwiYWhiIjp7InYiOnRydWUsInAiOltdfSwib3ZyZCI6ZmFsc2UsInNoYSI6eyJ2Ijp0cnVlLCJwIjpbXX0sImV4cCI6MTc0NDI5Njc5NCwiaWF0IjoxNzQ0MjkzMTk0LCJuYmYiOjE3NDQyOTMxOTQsImlzcyI6Imh0dHBzOi8vdGl0YW4uc2Ftc2NsdWIuY29tL2M4Y2MwNzBlLWRmZWQtNDVjOS1iZGE1LTI5ZDAwMTIxYWNiYi92Mi4wLyIsImp0aSI6IjZkNjNkM2ZjLTFhMzctNGVkZC1iYmNkLTdiMzM4M2Q5MDk3NiJ9.sObjUuhvOujen2-EuLC063JzvwleUB3o8SL_NMuiRbbEr2nknbvYvT0LWtfFw_C7NrqdGCgWYGwEgxswGe0ZVRaQ0InGBLP9R42SwyYEUbbbwRXp272E3kYPnDGIgapz_Xkn9xZzDVMtoyDqZy5JsNBlQTI-KxN0f07TmmHb177ckIgCRNXI0ECAstC1H5GGhOdjuEiOnKRva5U10khX83mJz-98XO8qhQemNYFWweCZiBtGX6_II841FcF527g20fSxcnLiser5SNGnovm1DZYheKXbIx1HFcpCyhaVdUT6WsZStaw63k3SucVVgiCg6VuOhygMez2UVVsF72F6O17OcoB6s6XGTVYZJ2Psg9FT27NW5pkl4UKmDtdXOBeGR55OgNRTT-u4CaF2DYYfPPc53tr5T3mxRQdDWo3j6OYyPbXeM2ErsC-PEhAjx2TOcGfJNZwcLOiS_rTY38GTAQikCsHyQEGJgYFSAs56YQFgEa-oCC3THDWkg_hzbyXDNyVJ7L6tEsIEWxV5tJ_qwHUpGpPBXZRboZL4FY_xAWV-cbFut_9LfNlbPAx5ZOaOqBlKpWe9bzU4sZ4tzZDwjGVkMXsvEIo-eQtiiI_q5_TaICBusj-OxYW8-qvrSyhVTl6pf-h1VVlG5UAtuZlNBYsneFSqQ78Nh2Cm-zIu_jc; seqnum=13; vtc=TBJ8X70A34BZEe2OMN0nAI; xpa=1dRg9|t5Tz_; xpm=1%2B1744293191%2BTBJ8X70A34BZEe2OMN0nAI~%2B1; xptwj=js:9705a397cd0eba77b142:/Na8+s2Q601amDvRYPkK3xdgQf48mahuLYORi7avvaEy6G8UUUxwxLWA0tOsx+4J0T2gvdh272GxDSS/OlYy9YuSWKVwSZChyuC3zODaZroG2EmOn6Pn3A==; TS017c4a41=0151cb3bb582fb97b951d1b9f5afa99459e09da68dac298fee6ebf28b2dcfb782c9f497eed2dbc377df76ae20593f53a1370ac5b81; TSbdf847b3027=085dd38544ab2000071c685fee62d57ee3683bdfe6265d8f45a10959e649721f2447b85ad23b103008bb9de36d113000a678ccbc3849d8571310bad1584860dec14d884a2c9ea8aa70b564ae7cfa65c06463b1a1f7a686b45f987185b8de9513; akavpau_P1_Sitewide=1744294230~id=43a9bbd99bcbe5415b6817ee37ef1345'
+            headers: {
+                'accept': 'application/json, text/plain, */*',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36'
             }
-          };
-          
-          const response = await axios.request(config);
-          //console.log(JSON.stringify(response.data));
-          return response;
-    }
+        };
 
-    catch (error) {
-        console.error("Error getting locations:", error.response?.data || error.message);
-        throw new Error("Error fetching locations.");
+        const response = await withTimeout(axios.request(config), 5000); // Timeout after 5 seconds
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching locations:", error.response?.data || error.message);
+        throw new Error("Failed to fetch Sam's Club locations.");
     }
 }
 
-async function SamsClubs(zipCode=47906, searchTerm) {
+// Function to fetch products from Sam's Club
+async function SamsClubs(zipCode = 47906, searchTerm) {
     let location;
     try {
         const location_data = await getLocations(zipCode);
@@ -53,43 +50,40 @@ async function SamsClubs(zipCode=47906, searchTerm) {
             name: location_data.data[0].name,
             Address: location_data.data[0].address?.address1 || "Unknown"
         };
-    } catch (err) {
-        console.error("Location lookup failed:", err.message);
+    } catch (error) {
+        console.error("Location lookup failed:", error.message);
         throw new Error("Location lookup failed. Please try a different ZIP code.");
     }
 
     try {
-        const response = await axios.get(`https://www.samsclub.com/api/node/vivaldi/browse/v2/products/search`, {
-            params: {
-                "sourceType": 1,
-                "limit": 45,
-                "clubId": location["locationId"],
-                "searchTerm": searchTerm,
-                "br": true,
-                "secondaryResults": 2,
-                "wmsponsored": 1,
-                "wmsba": true,
-                "banner": true,
-                "wmVideo": true
-            },
-            headers: {
-                'accept': 'application/json, text/plain, */*',
-                'accept-language': 'en-US,en;q=0.9',
-                'priority': 'u=1, i',
-                'referer': 'https://www.samsclub.com/s/bread',
-                'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-                'visitorid': 'TBJ8X70A34BZEe2OMN0nAI',
-                'Cookie': 'sxp-rl-SAT_CME-rn=32; sxp-rl-SAT_DISABLE_SYN_PREQUALIFY-rn=33; sxp-rl-SAT_GEO_LOC-rn=75; sxp-rl-SAT_NEW_ORDERS_UI-rn=81; sxp-rl-SAT_ORDER_REPLACEMENT-rn=95; sxp-rl-SAT_REORDER_V4-rn=55; sxp-rl-SCR_CANCEL_ORDER_V3-rn=62; sxp-rl-SCR_CANRV4-rn=1; sxp-rl-SCR_NEXT3-rn=14; sxp-rl-SCR_OHLIMIT-rn=83; sxp-rl-SCR_SHAPEJS-rn=1; sxp-rl-SCR_VERIFICATION_V4-rn=79; sxp-rl-SAT_ADD_ITEM-rn=27; sxp-rl-SCR_RYE-rn=95; sxp-rl-SCR_SCRE-rn=67; sxp-rl-SCR_TII-rn=45; SAT_WPWCNP=1; vtc=TBJ8X70A34BZEe2OMN0nAI; sxp-rl-SAT_CME-c=r|1|100; SAT_CME=1; sxp-rl-SAT_DISABLE_SYN_PREQUALIFY-c=r|1|0; SAT_DISABLE_SYN_PREQUALIFY=0; sxp-rl-SAT_GEO_LOC-c=r|1|50; SAT_GEO_LOC=0; sxp-rl-SAT_NEW_ORDERS_UI-c=r|1|0; SAT_NEW_ORDERS_UI=0; sxp-rl-SAT_ORDER_REPLACEMENT-c=r|1|0; SAT_ORDER_REPLACEMENT=0; sxp-rl-SAT_REORDER_V4-c=r|1|0; SAT_REORDER_V4=0; sxp-rl-SCR_CANCEL_ORDER_V3-c=r|1|0; SCR_CANCEL_ORDER_V3=0; sxp-rl-SCR_CANRV4-c=r|1|100; SCR_CANRV4=1; sxp-rl-SCR_NEXT3-c=r|1|100; SCR_NEXT3=1; sxp-rl-SCR_OHLIMIT-c=r|1|0; SCR_OHLIMIT=0; sxp-rl-SCR_SHAPEJS-c=r|1|0; SCR_SHAPEJS=0; sxp-rl-SCR_VERIFICATION_V4-c=r|1|0; SCR_VERIFICATION_V4=0; sxp-rl-SAT_ADD_ITEM-c=r|1|100; SAT_ADD_ITEM=1; sxp-rl-SCR_RYE-c=r|1|100; SCR_RYE=1; sxp-rl-SCR_SCRE-c=r|1|100; SCR_SCRE=1; sxp-rl-SCR_TII-c=r|1|100; SCR_TII=1; AMCVS_B98A1CFE53309C340A490D45%40AdobeOrg=1; s_ecid=MCMID%7C61674181177848360680464918353110227399; AMCV_B98A1CFE53309C340A490D45%40AdobeOrg=1585540135%7CMCIDTS%7C20188%7CMCMID%7C61674181177848360680464918353110227399%7CMCAAMLH-1744835389%7C7%7CMCAAMB-1744835389%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1744237789s%7CNONE%7CMCAID%7CNONE%7CvVersion%7C4.4.0; s_cc=true; pxcts=62a9dfb7-1581-11f0-b3db-8965889eb1b0; _pxvid=62a9cd9a-1581-11f0-b3db-7b859751af0b; AUTOSELECTCLUB=1; __pxvid=62da4d7b-1581-11f0-bc3e-7ed2bbdac79d; _gcl_aw=GCL.1744230590.CjwKCAjwtdi_BhACEiwA97y8BO70tpq_R6i1GdpkwcZZHiG0gy9v06sb7iVtUEnzmHlw37qN57ZhWRoCo-8QAvD_BwE; _gcl_gs=2.1.k1$i1744230586$u107973760; _gcl_au=1.1.575488038.1744230590; astract=ca-ae69f7c7-1c36-47b4-95f4-f8a808b4345e; acstkn=74:11#566559635#7=843715306_1744230590555; QuantumMetricUserID=05f3816dd5a237c8f40e55a4c9e08ca5; rcs=eF5j4cotK8lMETA0NzbTNdQ1ZClN9jA2T7a0TDZK1TUxMkzUNTEFstLMU5J0zYzNTC3MDdKMTRINAJACDg0; _mibhv=anon-1744230592015-2839090225_4591; rmStore=dmid:8096; _fbp=fb.1.1744230592202.883505408732895125; _tt_enable_cookie=1; _ttp=01JRE3XBQARE1FRE5HBJN0RV21_.tt.1; _pin_unauth=dWlkPU9USXdZVFF6WVdJdE0yUmhOUzAwWlRaakxUazROVFF0TnpVNE1UZzRNVEE0T1dNeQ; cto_bundle=Ndr9qV9RNDlQY25penF1Z080dXc0V2l2ZTBxM2hhbU1OJTJGSm4wMSUyQmJTU1F5WkNCenRmeERhS2poWCUyQk5IeGJ2JTJGWEQxZ0FKc1I4UlBtVHlCcUJaZ1hYUFh5OVJQbHdRV2VmOENTcndwSG1LM0IwNDdQU1pRb0FMY1lJVE9nciUyQlVyYnlINHFydHBhdVYzNkVuRGhvQTFMRmhSa3BVbDNpUGM0Nmo1bktYJTJCVXVNendRYXNXNXRBTHE5MFE5SEY4cEVudkh2dFNLMlc0T0NHZ1JxeHVnY2dSekRGRjlCSW5JYzdrZkJCJTJGV0Y3dW40OGw0Y050T2xTJTJGbjBkRXNmSVdwWm5LJTJCNzdIczhXUGhOcXNucld4UXlsRkE5b2xKQSUzRCUzRA; SSLB=0; crl8.fpcuid=20007da9-85c5-4d01-be5a-f97f9f8133ff; smtrrmkr=638798273958164724%5E01961c3e-bce8-47ce-8052-3fb53842744f%5E01961c3e-bce8-4678-896e-317d7389eb9f%5E0%5E52.119.103.33; ttcsid=1744230592245.1.1744230878575; _uetsid=640b90c0158111f0a7eb7d3691349813; _uetvid=640b8ab0158111f0b5f2f72bfac517b4; __gads=ID=992c602eebe0fd4b:T=1744230591:RT=1744231905:S=ALNI_MZTC9PoKVI1QW8xnyI_SDug1MfArQ; __gpi=UID=0000108febc26f53:T=1744230591:RT=1744231905:S=ALNI_MYpvw5ASiaU764gtcqqOqXjgPV9nQ; __eoi=ID=9fd9b35d495b98a3:T=1744230591:RT=1744231905:S=AA-Afja6IkgedHZht1Dka6PMKbCA; s_sq=samclub3prod%3D%2526c.%2526a.%2526activitymap.%2526page%253Dsearch%25253Asearch-results%2526link%253DYour%252520clubLafayette%25252C%252520IN%2526region%253Dpage-top%2526pageIDType%253D1%2526.activitymap%2526.a%2526.c%2526pid%253Dsearch%25253Asearch-results%2526pidt%253D1%2526oid%253DfunctionUr%252528%252529%25257B%25257D%2526oidt%253D2%2526ot%253DBUTTON; ttcsid_C95MTH3C77U5QKC67MB0=1744230592240.1.1744231915485; QuantumMetricSessionID=5d1bca9fa413801d2b0f3bbae0f29879; bstc=UhveJIOyoiOf_TBdDJe6Ak; xpa=1dRg9|t5Tz_; exp-ck=1dRg92t5Tz_1; SAT_NEO_EXPO=1; SAT_CHATBOT=0; xpm=1%2B1744240997%2BTBJ8X70A34BZEe2OMN0nAI~%2B1; seqnum=3; akavpau_P1_Sitewide=1744241619~id=52121af8d104ddaa833e211d15242f6b; sams-pt=eyJ4NXQiOiJzOXN6ZUptWldjMWhRYktIOUVqSmNoOUZkTkEiLCJraWQiOiJCM0RCMzM3ODk5OTk1OUNENjE0MUIyODdGNDQ4Qzk3MjFGNDU3NEQwIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJleHQiOiI4SkZtWW1KbE1HRTBNREV4T0dFNVkyUm1ZbUptTURGaU0yTXpOakk0TnpFME56Qm1OalUxWVRZMVlXWTJOekprTlRBMlpqa3daamsyTnpBeU9XVTRPV0ZpT1RnME5XWmhPVFpqWVRFNFlqTmpNRFUzWmpkak5UTTVZVEZrTkRrd1kyWmpZVE14Wm1NNFlUSmlOREJsWldWa1l6UmxZVGM1WVRNNE4yWTVNalkyTW1NM01tWXlNV0V5TmpReFlXWm1PVEkyTURNelpqazFZams1WldKaU5UZ3oiLCJ2ZXIiOiIxLjAiLCJjaGkiOiJkZXNrdG9wIiwiZmJ0IjpmYWxzZSwiYWhiIjp7InYiOnRydWUsInAiOltdfSwib3ZyZCI6ZmFsc2UsInNoYSI6eyJ2Ijp0cnVlLCJwIjpbXX0sImV4cCI6MTc0NDI0NDYxOSwiaWF0IjoxNzQ0MjQxMDE5LCJuYmYiOjE3NDQyNDEwMTksImlzcyI6Imh0dHBzOi8vdGl0YW4uc2Ftc2NsdWIuY29tL2M4Y2MwNzBlLWRmZWQtNDVjOS1iZGE1LTI5ZDAwMTIxYWNiYi92Mi4wLyIsImp0aSI6ImZiODkxZGUwLWNlMjItNDMwYi1hZTM3LTU0MGY4MDY1MTkyYyJ9.tvrVknbXN8gdzD_zmxZ9Ocz3t_9iiEYDiPGfM0DabpOtVdJvFSP3TDqCAbFq4MKCzy5Xx-G4Z8vPSPkMkXE7H8vUZ3egQtjOYsfcmmQ4XsIVoROK3KASnY77R1xyLFiH7g_culAXysZv1bKimw-n2k6Vm1EBaGWHTYRFla7HKuvIPO-sMaw4vSyoUHt6SYCdQCL2YQwIFkXld63ADChZ04L86IdLhf1zHyMky6DoWITzIXmGvCqi_43QZjLhATMf8rW766wCa6kxWyRrf3jmDLr12woFox2yIeJ-wYXXDGW4A10wkfubyQfrCpBH-XJVTWEzeizZSXJyLvF0cXYhck-TVvZpJgg5DleusdaEmWsfx2A4taK9iakabG591EiRH2lPNYv3Jla8RgTMBdrWe6KhepZ8amWtkFy6W1_I2ZlXV0hYJuSDyhfAq2ndP3Y8B91XLiMRggBW4O-RPyoJXpp2ALPXiqKKxPmbJ5CwnylFwZimR3U53yDFkOlv2KugONJ49_QWfe1NSBcu9k_bz3cRQVSyq_4uQIe2XNVMYlZr4gxRGbbXARCUE5WldEyX0B5mq0QyNBg1KThN72Mge-uhkVO1qsGaH0Fnb0QERI2W22jwCs1yGrYDF7la_G_BZgxBMzYg8Mp4CpBVuH4oOav9HN4e7c-PidnRiZE2BcY; xptwj=js:2a1aca71add3b962f70e:ixg6gfwAF3YGesfJxYamlD7jbtI8mgTEGb29aSiFkLEHp+QOfHa3QsYcVAHwuHH/wYFILEr1eVhYQ+nO3MfLkjpwhcdTSkGsiBFQNteMlSHkAON9fFfNQw==; TS017c4a41=01a3e7d84c063c616af8cb5c52dc5047410501bf134bc1d653a5931238e30fbb727a399a2c1ca812ca19ebcb8ce0e99b825fb42e90; TS01b1959a=01a3e7d84c063c616af8cb5c52dc5047410501bf134bc1d653a5931238e30fbb727a399a2c1ca812ca19ebcb8ce0e99b825fb42e90; TS017260c8=01a3e7d84c063c616af8cb5c52dc5047410501bf134bc1d653a5931238e30fbb727a399a2c1ca812ca19ebcb8ce0e99b825fb42e90; TSbdf847b3027=0816698a79ab200002f0c73636059c7fd3afe1a9b6e6f4fca4a537fe3dd131a2626f49e3325ae998086a91cb9111300009363720f8dba42b64133240f47822978049af523de2af4fe3ce7411e916030478b40d92fb3dd1eb8a1a6156523c0c8d; bm_sv=9C21D6E695C723C9D15C98988CA7EADA~YAAQvu0gF4x/fBaWAQAAR8rdHBuO/Qx6AaEuCDbSScUzK5gWM8v1FhhIUdJzz8BzxPYY5FHA/CMR7KU5ByzpP5pKXuDuxkabvnRpKJctkafOOT3i/7oGpDaG9qjFMz22FNHuSHDhCKZEEwTb8up1uzBaelxQ7nkqlHYY7qJZSGjBqtNlUqlqZtrxXITuky3X2fTBrJzQ5s7kuK7KbWaLkniFtzJ0+JP/fArTaHQVXCViaWRBVxomqUslJg1IJaOV0dk=~1; s_cpc=0; ak_bmsc=341111D6AF631E41CA376CADBC237BE2~000000000000000000000000000000~YAAQvu0gF6p/fBaWAQAAIszdHBvvcFoqJN9DMVfPSM+r82fduTT7XbftR2w9Qv0aKN4EYVwTKrbpOohdygtdDcf1F5JuivdEoYOUoQswS8Mei6CPAkCwr4EB3tpHUB5lpCr2RKhKqg4Bur0ah97PedZIrG0iSUH3wBZ7S9oZyXJYWJQ69CqfsBUszawDTgwa0cXXaXcyb2nVW0hG3ebz7kWJu6Iqa/5CrqEiza4pUBZEofriAZNL/oUpyqRthSmHTOynsP8cdX6CdKnMCDGJGUKL6BkRgxwfpVdKFdSh8CmM/6r03JaUjMi1r20I6WWZR5Nffr1mtz8MUXJCfs727OgxU/L/LlE+FsWdEjQ3A6bPMxpcbbFYbWTePfwrbLpOxUxcH60dQvkE1nxh8fR/MGVlIcUM1CsH5tp2A8cAB1dsJ7SjmOcU6mFSKY9oTthzoK3PaJqiOqTqtINEB74='
-            }
-        });
-        
-        const Products = response.data.payload.records
+        const response = await withTimeout(
+            axios.get(`https://www.samsclub.com/api/node/vivaldi/browse/v2/products/search`, {
+                params: {
+                    "sourceType": 1,
+                    "limit": 45,
+                    "clubId": location["locationId"],
+                    "searchTerm": searchTerm,
+                    "br": true,
+                    "secondaryResults": 2,
+                    "wmsponsored": 1,
+                    "wmsba": true,
+                    "banner": true,
+                    "wmVideo": true
+                },
+                headers: {
+                    'accept': 'application/json, text/plain, */*',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36'
+                }
+            }),
+            5000 // Timeout after 5 seconds
+        );
+
+        const Products = response.data.payload.records;
+
+        if (!Products || Products.length === 0) {
+            console.warn("No products found for search term:", searchTerm);
+            return [];
+        }
 
         // Translate into shared format
         const details = Products.map(p => ({
@@ -107,17 +101,14 @@ async function SamsClubs(zipCode=47906, searchTerm) {
 
         // Sort by price and return the 10 cheapest options
         const sortedDetails = details
-            .filter(item => item.price !== null) // filter out items with null price
+            .filter(item => item.price !== null) // Filter out items with null price
             .sort((a, b) => a.price - b.price)
             .slice(0, 10);
-        
-        //console.log(sortedDetails)
+
         return sortedDetails;
-        
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error fetching products:", error.response?.data || error.message);
-        throw new Error("Error fetching products.");
+        throw new Error("Failed to fetch products from Sam's Club.");
     }
 }
 
