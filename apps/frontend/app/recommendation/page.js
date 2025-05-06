@@ -15,6 +15,30 @@ export default function RecommendationPage() {
   const [results, setResults] = useState([]);           // new
   const [loadingResults, setLoadingResults] = useState(false); // new
 
+  // Function to Generate Grocery Items
+  const generateFromHistory = () => {
+    const popularSearches = [
+      "Milk",
+      "Eggs",
+      "Bread",
+      "Bananas",
+      "Chicken",
+      "Apples",
+      "Cheese",
+      "Rice",
+      "Pasta",
+      "Beef"
+    ];
+    
+    const limited_history = true
+    
+    // If limited history, use default recommendations
+    if (limited_history) {
+      setGroceryItems(popularSearches);
+    }
+    
+  };
+
   // Function to add a new item field
   const addItemField = () => {
     setGroceryItems([...groceryItems, ""]);
@@ -196,7 +220,7 @@ export default function RecommendationPage() {
           }}>
             <button 
               className="home-button hover-orange"
-              onClick={() => console.log("Generate from history")}
+              onClick={generateFromHistory}
               style={{ width: "50%" }}
             >
               Generate from History
