@@ -117,6 +117,14 @@ body {
   color: var(--dark-brown);
 }
 
+.gen-header {
+  font-family: var(--heading-font);
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: var(--dark-brown);
+  margin-top: 12px;
+}
+
 .search-item {
   display: flex;
   justify-content: space-between; /* Create two columns */
@@ -174,11 +182,17 @@ body {
   align-self: center;
 }
 
+.gen-button {
+  align-self: center;
+  margin-bottom: 12px;
+}
+
 /* Button Colors */
 .add-button,
 .reload-button,
 .view-similar,
-.remove-button {
+.remove-button,
+.gen-button {
   background-color: var(--accent-orange); /* Match front page button color */
   color: white;
   padding: 8px 12px;
@@ -191,7 +205,8 @@ body {
 
 .add-button:hover,
 .reload-button:hover,
-.view-similar:hover {
+.view-similar:hover,
+.gen-button:hover {
   background-color: #e76f51; /* Darker orange on hover */
 }
 
@@ -295,7 +310,8 @@ body {
 .view-similar,
 .remove-button,
 .add-button,
-.button {
+.button,
+.gen-button {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
@@ -326,6 +342,11 @@ body {
 }
 
 .add-button.disabled {
+  background-color: var(--secondary-brown);
+  cursor: default;
+}
+
+.gen-button.disabled {
   background-color: var(--secondary-brown);
   cursor: default;
 }
@@ -667,4 +688,31 @@ body {
 
 .history-item li {
   margin-bottom: 5px;
+}
+
+/* Search Results Scrollbar */
+.recommended-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px; /* Limit the height of the search results */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: var(--accent-orange) var(--light-cream); /* Custom colors */
+}
+
+.recommended-section::-webkit-scrollbar {
+  width: 12px; /* Scrollbar width */
+}
+
+.recommended-section::-webkit-scrollbar-track {
+  background: var(--light-cream); /* Track color */
+  border-radius: 4px;
+}
+
+.recommended-section::-webkit-scrollbar-thumb {
+  background-color: var(--accent-orange); /* Thumb color */
+  border-radius: 4px;
+  border: 2px solid var(--light-cream); /* Adds padding around the thumb */
 }

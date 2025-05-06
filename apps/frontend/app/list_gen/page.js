@@ -10,6 +10,68 @@ export default function Home() {
   const [lastSearch, setLastSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shoppingHistory, setShoppingHistory] = useState([]);
+  const [recommendedItems, setRecommendedItems] = useState([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const commonSearches = [
+    "Milk",
+    "Eggs",
+    "Bread",
+    "Bananas",
+    "Chicken",
+    "Apples",
+    "Cheese",
+    "Rice",
+    "Pasta",
+    "Butter",
+    "Beef",
+    "Yogurt",
+    "Tomatoes",
+    "Coffee"
+  ];
+
+  function getRandomItem(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+      return undefined;
+    }
+    const randomIndex = Math.floor(Math.random() * arr.length);
+    return arr[randomIndex];
+  }
+
+  const handleGenerateRecommendations = async () => {
+    setIsLoadingRecommendations(true);
+    try {
+      const searchTerm = getRandomItem(commonSearches)
+      const response = await fetch(
+        `http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(searchTerm)}`
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch recommended products");
+      }
+  
+      const data = await response.json();
+      // Build a map of provider -> cheapest item
+      const cheapestByProvider = data.reduce((map, item) => {
+        const price = item.price ?? Infinity;
+        const provider = item.provider;
+        const existing = map.get(provider);
+  
+        if (!existing || price < (existing.price ?? Infinity)) {
+          map.set(provider, item);
+        }
+        return map;
+      }, new Map());
+  
+      // Convert back to array of items
+      const uniqueCheapestItems = Array.from(cheapestByProvider.values());
+      setRecommendedItems(uniqueCheapestItems);
+
+    } catch (error) {
+      // console.error("Error fetching recommended items:", error);
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
 
   useEffect(() => {
     fetchShoppingHistory
@@ -33,8 +95,8 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
-        const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        //const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
@@ -190,6 +252,53 @@ export default function Home() {
                     </div>
 
                     {/* Right Column: Name, Price, and Location */}
+                    <div className="search-details">
+                      <span className="search-name">{item.name}</span>
+                      <span className="search-price">
+                        ${item.price} / {item.unit || "each"}
+                      </span>
+                      <span className="search-location">{item.location}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Recommended Products Section */}
+          <h3 className="gen-header">Recommended for You</h3>
+          <button
+              className="gen-button"
+              onClick={handleGenerateRecommendations}
+              disabled={isLoadingRecommendations}
+            >
+              {isLoadingRecommendations ? "Generating..." : "Generate Recommendations"}
+          </button>
+          <div className="recommended-section">
+            {recommendedItems.length === 0 && !isLoadingRecommendations ? (
+              <div className="empty-recommendations">No recommendations yet.</div>
+            ) : (
+              recommendedItems.map((item) => {
+                const itemExists = shoppingList.some(
+                  (existingItem) => existingItem.id === item.id
+                );
+                return (
+                  <div key={item.id} className="search-item">
+                    <div className="search-image">
+                      {item.image_url && (
+                        <img
+                          src={item.image_url}
+                          alt="Recommended Product"
+                        />
+                      )}
+                      <button
+                        className={`add-button ${itemExists ? "disabled" : ""}`}
+                        onClick={!itemExists ? () => addToShoppingList(item) : undefined}
+                        disabled={itemExists}
+                      >
+                        {itemExists ? "Added" : "Add"}
+                      </button>
+                    </div>
                     <div className="search-details">
                       <span className="search-name">{item.name}</span>
                       <span className="search-price">
