@@ -319,6 +319,53 @@ app.get("/api/getShoppingLists", authenticateToken, async (req: AuthRequest, res
   }
 });
 
+// Save user allergen preferences
+app.post("/api/savePreferences", authenticateToken, async (req: AuthRequest, res: Response) => {
+  const { username } = req.user;
+  const { allergens } = req.body;
+
+  if (!Array.isArray(allergens)) {
+    return res.status(400).json({ error: "Invalid allergens data" });
+  }
+
+  const params = {
+    TableName: "UserPreferences",
+    Item: {
+      username,
+      allergens,
+      updatedAt: new Date().toISOString(),
+    },
+  };
+
+  try {
+    await dynamoDb.put(params).promise();
+    res.json({ message: "Preferences saved successfully" });
+  } catch (error) {
+    console.error("Error saving preferences:", error);
+    res.status(500).json({ error: "Could not save preferences" });
+  }
+});
+
+// Get user allergen preferences
+app.get("/api/getPreferences", authenticateToken, async (req: AuthRequest, res: Response) => {
+  const { username } = req.user;
+
+  const params = {
+    TableName: "UserPreferences",
+    Key: {
+      username,
+    },
+  };
+
+  try {
+    const data = await dynamoDb.get(params).promise();
+    res.json(data.Item || { allergens: [] });
+  } catch (error) {
+    console.error("Error fetching preferences:", error);
+    res.status(500).json({ error: "Could not fetch preferences" });
+  }
+});
+
 // Protected Route
 app.get("/api/protected", authenticateToken, (req: AuthRequest, res: Response) => {
   res.json({ message: `Welcome ${req.user.username}! This is a protected route.` });
