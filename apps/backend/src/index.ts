@@ -144,7 +144,7 @@ app.get('/api/getAllProducts', async (req: Request, res: Response) => {
       const krogerProducts = results[0].status === "fulfilled" ? results[0].value : [];
       const samsClubProducts = results[1].status === "fulfilled" ? results[1].value : [];
       const meijerProducts = results[2].status === "fulfilled" ? results[2].value : [];
-      const targetProducts = results[3].status === "fulfilled" ? results[2].value : [];
+      const targetProducts = results[3].status === "fulfilled" ? results[3].value : [];
 
       const normalizeProduct = (product: any, provider: string) => ({
           id: `${provider}-${product.id || product.tcin || product.productId}`, // Ensure unique id by appending unique identifier
