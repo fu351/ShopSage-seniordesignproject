@@ -12,8 +12,8 @@ export default function RecommendationPage() {
   
   // New state for grocery items - initialize with 5 empty fields
   const [groceryItems, setGroceryItems] = useState(["", "", "", "", ""]);
-  const [results, setResults] = useState([]);           // new
-  const [loadingResults, setLoadingResults] = useState(false); // new
+  const [results, setResults] = useState(null);           // updated
+  const [loadingResults, setLoadingResults] = useState(false);
 
   // Function to Generate Grocery Items
   const generateFromHistory = () => {
@@ -30,13 +30,12 @@ export default function RecommendationPage() {
       "Beef"
     ];
     
-    const limited_history = true
+    const limited_history = true;
     
     // If limited history, use default recommendations
     if (limited_history) {
       setGroceryItems(popularSearches);
     }
-    
   };
 
   // Function to add a new item field
@@ -68,21 +67,36 @@ export default function RecommendationPage() {
     }
 
     setLoadingResults(true);
-    const promises = items.map(async item => {
-      const [k, s, m] = await Promise.all([
-        fetch(`/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
-          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
-        fetch(`/api/samsclub?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
-          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
-        fetch(`/api/meijer?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
-          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
-      ]);
-      return { item, kroger: k, sams: s, meijer: m };
-    });
+    try {
+      const promises = items.map(async (item) => {
+        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`);
+        const data = await response.json();
+        return { item, data };
+      });
 
-    const res = await Promise.all(promises);
-    setResults(res);
-    setLoadingResults(false);
+      const res = await Promise.all(promises);
+
+      // Process results to create shopping lists for each location
+      const krogerList = [];
+      const meijerList = [];
+      const targetList = [];
+
+      res.forEach(({ item, data }) => {
+        const kroger = data.find(product => product.provider === "Kroger");
+        const meijer = data.find(product => product.provider === "Meijer");
+        const target = data.find(product => product.provider === "Target");
+
+        if (kroger) krogerList.push(kroger);
+        if (meijer) meijerList.push(meijer);
+        if (target) targetList.push(target);
+      });
+
+      setResults({ krogerList, meijerList, targetList });
+    } catch (error) {
+      console.error("Error generating shopping list:", error);
+    } finally {
+      setLoadingResults(false);
+    }
   };
 
   // Dummy handlers: replace with your actual API calls
@@ -237,41 +251,72 @@ export default function RecommendationPage() {
         </div>
 
         {/* Results Grid */}
-        {results.length > 0 && (
+        {results && (
           <section style={{ marginTop: "30px" }}>
-            <h2>Cheapest Options</h2>
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr 1fr",
-              gap: "16px",
-              alignItems: "start"
-            }}>
-              <div><strong>Item</strong></div>
-              <div><strong>Kroger</strong></div>
-              <div><strong>Sam’s Club</strong></div>
-              <div><strong>Meijer</strong></div>
+            <h2>Shopping Lists by Location</h2>
 
-              {results.map(({ item, kroger, sams, meijer }) => (
-                <React.Fragment key={item}>
-                  <div>{item}</div>
-                  <div>
-                    {kroger 
-                      ? `${kroger.name} — $${kroger.price.toFixed(2)}`
-                      : "N/A"}
+            {/* Kroger List */}
+            {results.krogerList.length > 0 && (
+              <div className="shopping-list">
+                <h3>Kroger</h3>
+                {results.krogerList.map((item) => (
+                  <div key={item.id} className="shopping-item">
+                    <div className="image-placeholder">
+                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                    </div>
+                    <div className="item-details">
+                      <span className="item-name">{item.name}</span>
+                      <div className="price-quantity">
+                        <span className="price">${item.price}</span>
+                        <span className="item-location">{item.location}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    {sams 
-                      ? `${sams.name} — $${sams.price.toFixed(2)}`
-                      : "N/A"}
+                ))}
+              </div>
+            )}
+
+            {/* Meijer List */}
+            {results.meijerList.length > 0 && (
+              <div className="shopping-list">
+                <h3>Meijer</h3>
+                {results.meijerList.map((item) => (
+                  <div key={item.id} className="shopping-item">
+                    <div className="image-placeholder">
+                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                    </div>
+                    <div className="item-details">
+                      <span className="item-name">{item.name}</span>
+                      <div className="price-quantity">
+                        <span className="price">${item.price}</span>
+                        <span className="item-location">{item.location}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    {meijer 
-                      ? `${meijer.name} — $${meijer.price.toFixed(2)}`
-                      : "N/A"}
+                ))}
+              </div>
+            )}
+
+            {/* Target List */}
+            {results.targetList.length > 0 && (
+              <div className="shopping-list">
+                <h3>Target</h3>
+                {results.targetList.map((item) => (
+                  <div key={item.id} className="shopping-item">
+                    <div className="image-placeholder">
+                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                    </div>
+                    <div className="item-details">
+                      <span className="item-name">{item.name}</span>
+                      <div className="price-quantity">
+                        <span className="price">${item.price}</span>
+                        <span className="item-location">{item.location}</span>
+                      </div>
+                    </div>
                   </div>
-                </React.Fragment>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
       </div>
