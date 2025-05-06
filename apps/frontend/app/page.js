@@ -1,29 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { AuthContext } from "./AuthContext"; // Adjust path as needed
 import config from "../config";
 
 export default function HomePage() {
-  // State for current user, login modal, profile dropdown and authentication mode
-  const [user, setUser] = useState(null);
+  const { user, login, logout } = useContext(AuthContext);
   const [modalOpen, setModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token); // Decode the token to get user info
-        setUser({ username: decodedToken.username });
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        localStorage.removeItem("authToken"); // Remove invalid token
-      }
-    }
-  }, []);
+  const [authMode, setAuthMode] = useState("login");
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -35,16 +21,10 @@ export default function HomePage() {
         password: password.value,
       });
 
-      // Save the token (e.g., in localStorage or state)
-      const { token } = response.data;
-      localStorage.setItem("authToken", token);
-
-      // Set the user state
-      const decodedToken = jwtDecode(token);
-      setUser({ username: decodedToken.username });
+      login(response.data.token);
       setModalOpen(false);
     } catch (error) {
-      alert("Login failed: " + error.response?.data?.message || "Unknown error");
+      alert("Login failed: " + (error.response?.data?.message || "Unknown error"));
     }
   };
 
@@ -66,19 +46,17 @@ export default function HomePage() {
       alert("Signup successful! You can now log in.");
       setAuthMode("login");
     } catch (error) {
-      alert("Signup failed: " + error.response?.data?.error || "Unknown error");
+      alert("Signup failed: " + (error.response?.data?.error || "Unknown error"));
     }
   };
 
   const handleSignOut = () => {
-    setUser(null);
+    logout();
     setShowDropdown(false);
-    localStorage.removeItem("authToken"); // Clear the token
   };
 
   return (
     <div className="home-container">
-
       {/* Header */}
       <header className="home-header" style={{ position: "relative" }}>
         <h1 className="home-title">Welcome to </h1>
@@ -117,20 +95,9 @@ export default function HomePage() {
               </button>
               {showDropdown && (
                 <div className="auth-dropdown">
-                  <Link href="/history">
-                    <a>History</a>
-                  </Link>
-                  <Link href="/preferences">
-                    <a>Preferences</a>
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                  >
-                    Sign Out
-                  </button>
+                  <Link href="/history"><a>History</a></Link>
+                  <Link href="/preferences"><a>Preferences</a></Link>
+                  <button onClick={handleSignOut}>Sign Out</button>
                 </div>
               )}
             </div>
@@ -198,9 +165,7 @@ export default function HomePage() {
                 </form>
               </>
             )}
-            <button onClick={() => setModalOpen(false)} className="auth-modal-close">
-              X
-            </button>
+            <button onClick={() => setModalOpen(false)} className="auth-modal-close">X</button>
           </div>
         </div>
       )}

@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useContext } from "react";
 import config from "../../config";
+import { AuthContext } from "../AuthContext"; // Adjust if needed
 
 export default function PreferencesPage() {
+  const { user } = useContext(AuthContext); // Use shared auth context
   const [selectedAllergens, setSelectedAllergens] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,26 +20,21 @@ export default function PreferencesPage() {
   ];
 
   useEffect(() => {
-    fetchPreferences();
-  }, []);
+    if (user) {
+      fetchPreferences();
+    }
+  }, [user]);
 
   const fetchPreferences = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("You must be logged in to view your preferences.");
-      return;
-    }
-
     try {
+      const token = localStorage.getItem("authToken"); // Still needed unless token is stored in context
       const response = await fetch(`${config.apiBaseUrl}/getPreferences`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch preferences");
-      }
+      if (!response.ok) throw new Error("Failed to fetch preferences");
 
       const data = await response.json();
       setSelectedAllergens(data.allergens || []);
@@ -49,14 +45,10 @@ export default function PreferencesPage() {
   };
 
   const savePreferences = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("You must be logged in to save your preferences.");
-      return;
-    }
-
-    setIsLoading(true);
     try {
+      const token = localStorage.getItem("authToken");
+      setIsLoading(true);
+
       const response = await fetch(`${config.apiBaseUrl}/savePreferences`, {
         method: "POST",
         headers: {
@@ -66,9 +58,7 @@ export default function PreferencesPage() {
         body: JSON.stringify({ allergens: selectedAllergens }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to save preferences");
-      }
+      if (!response.ok) throw new Error("Failed to save preferences");
 
       alert("Preferences saved successfully!");
     } catch (error) {
@@ -87,40 +77,38 @@ export default function PreferencesPage() {
     );
   };
 
+  if (!user) {
+    return (
+      <div className="preferences-container">
+        <h1>Allergen Preferences</h1>
+        <p>You must be signed in to view and save preferences.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="preferences-container">
-      <header className="header">
-        <Link href="..">
-          <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
-        </Link>
-      </header>
-      <main className="main-content">
-        <section className="preferences-section">
-          <h1 className="preferences-header">Allergen Preferences</h1>
-          <p className="preferences-description">
-            Select the allergens you want to avoid:
-          </p>
-          <div className="allergen-list">
-            {availableAllergens.map((allergen) => (
-              <label key={allergen} className="allergen-item">
-                <input
-                  type="checkbox"
-                  checked={selectedAllergens.includes(allergen)}
-                  onChange={() => toggleAllergen(allergen)}
-                />
-                {allergen}
-              </label>
-            ))}
-          </div>
-          <button
-            onClick={savePreferences}
-            className="save-button"
-            disabled={isLoading}
-          >
-            {isLoading ? "Saving..." : "Save Preferences"}
-          </button>
-        </section>
-      </main>
+      <h1>Allergen Preferences</h1>
+      <p>Select the allergens you want to avoid:</p>
+      <div className="allergen-list">
+        {availableAllergens.map((allergen) => (
+          <label key={allergen} className="allergen-item">
+            <input
+              type="checkbox"
+              checked={selectedAllergens.includes(allergen)}
+              onChange={() => toggleAllergen(allergen)}
+            />
+            {allergen}
+          </label>
+        ))}
+      </div>
+      <button
+        onClick={savePreferences}
+        className="save-button"
+        disabled={isLoading}
+      >
+        {isLoading ? "Saving..." : "Save Preferences"}
+      </button>
     </div>
   );
 }

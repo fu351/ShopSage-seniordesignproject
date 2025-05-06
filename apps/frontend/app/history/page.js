@@ -1,22 +1,24 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import config from "../../config";
+import { AuthContext } from "../AuthContext"; // Adjust the path if needed
 
 export default function ShoppingHistory() {
+  const { user } = useContext(AuthContext);
   const [shoppingHistory, setShoppingHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchShoppingHistory();
-  }, []);
+    if (user) {
+      fetchShoppingHistory();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const fetchShoppingHistory = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("You must be logged in to view your shopping history.");
-      return;
-    }
-
     try {
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`${config.apiBaseUrl}/getShoppingLists`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -32,8 +34,28 @@ export default function ShoppingHistory() {
     } catch (error) {
       console.error("Error fetching shopping history:", error);
       alert("Could not fetch shopping history.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="history-container">
+        <h1>Shopping History</h1>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="history-container">
+        <h1>Shopping History</h1>
+        <p>You must be signed in to view your shopping history.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="history-container">
@@ -47,7 +69,8 @@ export default function ShoppingHistory() {
             <ul>
               {list.items.map((item, index) => (
                 <li key={index}>
-                  {item.name} x {item.quantity} - ${item.price}
+                  <strong>{item.name}</strong> &times; {item.quantity} — $
+                  {(item.price * item.quantity).toFixed(2)}
                 </li>
               ))}
             </ul>

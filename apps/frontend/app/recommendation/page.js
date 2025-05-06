@@ -1,128 +1,110 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react"; // Import Trash2 icon
+import { Trash2 } from "lucide-react";
+import { AuthContext } from "../AuthContext"; // adjust path if needed
+import axios from "axios";
+import config from "../../config";
 
 export default function RecommendationPage() {
-  // State for current user, login modal, profile dropdown and authentication mode
-  const [user, setUser] = useState(null);
+  const { user, login, logout } = useContext(AuthContext);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
-  
-  // New state for grocery items - initialize with 5 empty fields
+  const [authMode, setAuthMode] = useState("login");
+
   const [groceryItems, setGroceryItems] = useState(["", "", "", "", ""]);
-  const [results, setResults] = useState(null);           // updated
+  const [results, setResults] = useState(null);
   const [loadingResults, setLoadingResults] = useState(false);
 
-  // Function to Generate Grocery Items
   const generateFromHistory = () => {
-    const popularSearches = [
-      "Milk",
-      "Eggs",
-      "Bread",
-      "Bananas",
-      "Chicken",
-      "Apples",
-      "Cheese",
-      "Rice",
-      "Pasta",
-      "Beef"
+    const defaultItems = [
+      "Milk", "Eggs", "Bread", "Bananas", "Chicken",
+      "Apples", "Cheese", "Rice", "Pasta", "Beef",
     ];
-    
-    const limited_history = true;
-    
-    // If limited history, use default recommendations
-    if (limited_history) {
-      setGroceryItems(popularSearches);
-    }
+    setGroceryItems(defaultItems);
   };
 
-  // Function to add a new item field
-  const addItemField = () => {
-    setGroceryItems([...groceryItems, ""]);
-  };
+  const addItemField = () => setGroceryItems([...groceryItems, ""]);
 
-  // Function to remove an item field
   const removeItemField = (index) => {
-    if (groceryItems.length <= 1) return; // Always keep at least one field
+    if (groceryItems.length <= 1) return;
     const newItems = [...groceryItems];
     newItems.splice(index, 1);
     setGroceryItems(newItems);
   };
 
-  // Function to update an item value
   const updateItem = (index, value) => {
     const newItems = [...groceryItems];
     newItems[index] = value;
     setGroceryItems(newItems);
   };
 
-  // Function to handle generating shopping list
   const generateShoppingList = async () => {
-    const items = groceryItems.filter(i => i.trim());
-    if (!items.length) {
-      alert("Please add at least one item to your grocery list!");
-      return;
-    }
+    const items = groceryItems.filter((i) => i.trim());
+    if (!items.length) return alert("Please add at least one item!");
 
     setLoadingResults(true);
     try {
-      const promises = items.map(async (item) => {
-        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`);
-        const data = await response.json();
+      const results = await Promise.all(items.map(async (item) => {
+        const res = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`);
+        const data = await res.json();
         return { item, data };
+      }));
+
+      const lists = { krogerList: [], meijerList: [], targetList: [] };
+      results.forEach(({ data }) => {
+        data.forEach(product => {
+          if (product.provider === "Kroger") lists.krogerList.push(product);
+          if (product.provider === "Meijer") lists.meijerList.push(product);
+          if (product.provider === "Target") lists.targetList.push(product);
+        });
       });
 
-      const res = await Promise.all(promises);
-
-      // Process results to create shopping lists for each location
-      const krogerList = [];
-      const meijerList = [];
-      const targetList = [];
-
-      res.forEach(({ item, data }) => {
-        const kroger = data.find(product => product.provider === "Kroger");
-        const meijer = data.find(product => product.provider === "Meijer");
-        const target = data.find(product => product.provider === "Target");
-
-        if (kroger) krogerList.push(kroger);
-        if (meijer) meijerList.push(meijer);
-        if (target) targetList.push(target);
-      });
-
-      setResults({ krogerList, meijerList, targetList });
+      setResults(lists);
     } catch (error) {
-      console.error("Error generating shopping list:", error);
+      console.error("Error generating list:", error);
     } finally {
       setLoadingResults(false);
     }
   };
 
-  // Dummy handlers: replace with your actual API calls
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // ...perform login authentication...
-    setUser({ username: e.target.username.value });
-    setModalOpen(false);
-  };
+    const { username, password } = e.target;
 
-  const handleSignup = (e) => {
-    e.preventDefault();
-    // ...perform signup logic and validations...
-    const { username, password, confirmPassword } = e.target;
-    if (password.value !== confirmPassword.value) {
-      alert("Passwords do not match!");
-      return;
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/login`, {
+        username: username.value,
+        password: password.value,
+      });
+
+      login(response.data.token); // context method
+      setModalOpen(false);
+    } catch (err) {
+      alert("Login failed: " + (err.response?.data?.message || "Unknown error"));
     }
-    // Assume successful signup, automatically sign the user in
-    setUser({ username: username.value });
-    setModalOpen(false);
   };
 
-  const handleSignOut = () => {
-    setUser(null);
-    setShowDropdown(false);
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    const { username, password, confirmPassword } = e.target;
+
+    if (password.value !== confirmPassword.value) {
+      return alert("Passwords do not match!");
+    }
+
+    try {
+      await axios.post(`${config.apiBaseUrl}/register`, {
+        username: username.value,
+        password: password.value,
+      });
+
+      alert("Signup successful! Please log in.");
+      setAuthMode("login");
+    } catch (err) {
+      alert("Signup failed: " + (err.response?.data?.error || "Unknown error"));
+    }
   };
 
   return (
@@ -132,48 +114,28 @@ export default function RecommendationPage() {
         <Link href="/">
           <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
         </Link>
-        
-        {/* Authentication Controls */}
+
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <Link href="/list_gen">
             <button className="home-nav-button sign-in-btn">Grocery Search</button>
           </Link>
-          
           {!user ? (
-            <button
-              className="home-nav-button sign-in-btn"
-              onClick={() => {
-                setModalOpen(true);
-                setAuthMode("login");
-              }}
-            >
+            <button className="home-nav-button sign-in-btn" onClick={() => {
+              setModalOpen(true);
+              setAuthMode("login");
+            }}>
               Sign In
             </button>
           ) : (
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <button
-                className="home-nav-button"
-                onClick={() => setShowDropdown((prev) => !prev)}
-              >
+            <div style={{ position: "relative" }}>
+              <button className="home-nav-button" onClick={() => setShowDropdown(prev => !prev)}>
                 {user.username}
               </button>
               {showDropdown && (
                 <div className="auth-dropdown">
-                  <Link href="/preferences">
-                    <div className="dropdown-item">Preferences</div>
-                  </Link>
-                  <Link href="/history">
-                    <div className="dropdown-item">View History</div>
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                    className="dropdown-item"
-                  >
-                    Sign Out
-                  </button>
+                  <Link href="/preferences"><div className="dropdown-item">Preferences</div></Link>
+                  <Link href="/history"><div className="dropdown-item">View History</div></Link>
+                  <button className="dropdown-item" onClick={logout}>Sign Out</button>
                 </div>
               )}
             </div>
@@ -181,17 +143,12 @@ export default function RecommendationPage() {
         </div>
       </header>
 
-      {/* Main Content - Right Column Only */}
+      {/* Main Content */}
       <div className="main-content" style={{ justifyContent: "center" }}>
-        {/* Grocery Item Input */}
         <div className="shopping-list" style={{ maxWidth: "800px", width: "100%" }}>
           <h2 className="shopping-header">Add Your Grocery Items</h2>
-          <div className="grocery-input-container" style={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            gap: "10px",
-            marginBottom: "20px"
-          }}>
+
+          <div className="grocery-input-container" style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
             {groceryItems.map((item, index) => (
               <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <input
@@ -200,162 +157,81 @@ export default function RecommendationPage() {
                   onChange={(e) => updateItem(index, e.target.value)}
                   placeholder={index === groceryItems.length - 1 ? "Add additional item" : "Enter grocery item"}
                   className="search-bar"
-                  style={{ flex: 1, margin: 0 }}
+                  style={{ flex: 1 }}
                 />
                 <div className="grocery-button-container">
                   {index !== groceryItems.length - 1 && (
-                    <button 
-                      className="remove-button square-button"
-                      onClick={() => removeItemField(index)}
-                      aria-label="Delete item"
-                    >
+                    <button className="remove-button square-button" onClick={() => removeItemField(index)}>
                       <Trash2 size={16} />
                     </button>
                   )}
                   {index === groceryItems.length - 1 && (
-                    <button 
-                      className="add-button square-button hover-orange"
-                      onClick={addItemField}
-                      aria-label="Add new item"
-                    >
-                      +
-                    </button>
+                    <button className="add-button square-button hover-orange" onClick={addItemField}>+</button>
                   )}
                 </div>
               </div>
             ))}
           </div>
-          
-          {/* Side-by-side buttons container */}
-          <div style={{ 
-            display: "flex", 
-            gap: "10px", 
-            marginTop: "20px" 
-          }}>
-            <button 
-              className="home-button hover-orange"
-              onClick={generateFromHistory}
-              style={{ width: "50%" }}
-            >
+
+          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <button className="home-button hover-orange" onClick={generateFromHistory} style={{ width: "50%" }}>
               Generate from History
             </button>
-            
-            <button 
-              className="home-button hover-orange"
-              onClick={generateShoppingList}
-              style={{ width: "50%" }}
-            >
+            <button className="home-button hover-orange" onClick={generateShoppingList} style={{ width: "50%" }}>
               {loadingResults ? "Loading…" : "Generate Shopping List"}
             </button>
           </div>
         </div>
 
-        {/* Results Grid */}
+        {/* Results */}
         {results && (
           <section style={{ marginTop: "30px" }}>
             <h2>Shopping Lists by Location</h2>
-
-            {/* Kroger List */}
-            {results.krogerList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Kroger</h3>
-                {results.krogerList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
+            {["krogerList", "meijerList", "targetList"].map((storeKey) => (
+              results[storeKey].length > 0 && (
+                <div key={storeKey} className="shopping-list">
+                  <h3>{storeKey.replace("List", "")}</h3>
+                  {results[storeKey].map((item) => (
+                    <div key={item.id} className="shopping-item">
+                      <div className="image-placeholder">
+                        {item.image_url && <img src={item.image_url} alt={item.name} />}
+                      </div>
+                      <div className="item-details">
+                        <span className="item-name">{item.name}</span>
+                        <div className="price-quantity">
+                          <span className="price">${item.price}</span>
+                          <span className="item-location">{item.location}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Meijer List */}
-            {results.meijerList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Meijer</h3>
-                {results.meijerList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Target List */}
-            {results.targetList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Target</h3>
-                {results.targetList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )
+            ))}
           </section>
         )}
       </div>
 
-      {/* Footer */}
       <footer className="footer">
         <p>&copy; {new Date().getFullYear()} ShopSage. All rights reserved.</p>
       </footer>
 
-      {/* Login/Signup Modal */}
+      {/* Auth Modal */}
       {modalOpen && (
         <div className="auth-modal-overlay">
           <div className="auth-modal-container">
             {authMode === "signup" && (
-              <button onClick={() => setAuthMode("login")} className="auth-modal-back">
-                &larr; Back
-              </button>
+              <button onClick={() => setAuthMode("login")} className="auth-modal-back">&larr; Back</button>
             )}
             {authMode === "login" ? (
               <>
                 <h2>Sign In</h2>
                 <form onSubmit={handleLogin}>
-                  <div>
-                    <label>Username:</label>
-                    <input type="text" name="username" required />
-                  </div>
-                  <div>
-                    <label>Password:</label>
-                    <input type="password" name="password" required />
-                  </div>
+                  <div><label>Username:</label><input type="text" name="username" required /></div>
+                  <div><label>Password:</label><input type="password" name="password" required /></div>
                   <div className="modal-buttons">
                     <button type="submit" className="home-button secondary">Login</button>
-                    <button
-                      type="button"
-                      className="home-button secondary"
-                      onClick={() => setAuthMode("signup")}
-                    >
-                      Sign Up
-                    </button>
+                    <button type="button" className="home-button secondary" onClick={() => setAuthMode("signup")}>Sign Up</button>
                   </div>
                 </form>
               </>
@@ -363,27 +239,16 @@ export default function RecommendationPage() {
               <>
                 <h2>Sign Up</h2>
                 <form onSubmit={handleSignup}>
-                  <div>
-                    <label>Username:</label>
-                    <input type="text" name="username" required />
-                  </div>
-                  <div>
-                    <label>Password:</label>
-                    <input type="password" name="password" required />
-                  </div>
-                  <div>
-                    <label>Retype Password:</label>
-                    <input type="password" name="confirmPassword" required />
-                  </div>
+                  <div><label>Username:</label><input type="text" name="username" required /></div>
+                  <div><label>Password:</label><input type="password" name="password" required /></div>
+                  <div><label>Retype Password:</label><input type="password" name="confirmPassword" required /></div>
                   <div className="modal-buttons">
                     <button type="submit" className="home-button secondary">Sign Up</button>
                   </div>
                 </form>
               </>
             )}
-            <button onClick={() => setModalOpen(false)} className="auth-modal-close">
-              X
-            </button>
+            <button onClick={() => setModalOpen(false)} className="auth-modal-close">X</button>
           </div>
         </div>
       )}
