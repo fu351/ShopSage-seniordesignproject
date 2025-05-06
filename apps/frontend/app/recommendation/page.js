@@ -92,6 +92,29 @@ export default function RecommendationPage() {
     }
   };
 
+  const saveShoppingList = async (shoppingList) => {
+    try {
+      const token = localStorage.getItem("authToken"); // Consider storing in AuthContext instead
+      if (!token) return alert("You must be logged in to save your list.");
+
+      const response = await fetch(`${config.apiBaseUrl}/saveShoppingList`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ items: shoppingList }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save shopping list");
+
+      alert("Shopping list saved!");
+    } catch (err) {
+      console.error("Error saving list:", err);
+      alert("Could not save list.");
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     const { username, password } = e.target;
@@ -225,7 +248,6 @@ export default function RecommendationPage() {
             {/* Kroger List */}
             {results.krogerList.length > 0 && (() => {
               const total = results.krogerList.reduce((sum, item) => sum + (item.price || 0), 0);
-              const payload = encodeURIComponent(JSON.stringify(results.krogerList));
               return (
                 <div className="shopping-list" style={{ flex: 1 }}>
                   <h3>Kroger</h3>
@@ -254,17 +276,12 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <Link
-                      href={{
-                        pathname: "/list_gen",
-                        query: { list: payload },
-                      }}
-                      passHref
+                    <button
+                      className="use-list-button home-button hover-orange"
+                      onClick={() => saveShoppingList(results.krogerList)}
                     >
-                      <button className="use-list-button home-button hover-orange">
-                        Use List
-                      </button>
-                    </Link>
+                      Save to History
+                    </button>
                   </div>
                 </div>
               );
@@ -273,7 +290,6 @@ export default function RecommendationPage() {
             {/* Meijer List */}
             {results.meijerList.length > 0 && (() => {
               const total = results.meijerList.reduce((sum, item) => sum + (item.price || 0), 0);
-              const payload = encodeURIComponent(JSON.stringify(results.meijerList));
               return (
                 <div className="shopping-list" style={{ flex: 1 }}>
                   <h3>Meijer</h3>
@@ -302,17 +318,12 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <Link
-                      href={{
-                        pathname: "/list_gen",
-                        query: { list: payload },
-                      }}
-                      passHref
+                    <button
+                      className="use-list-button home-button hover-orange"
+                      onClick={() => saveShoppingList(results.meijerList)}
                     >
-                      <button className="use-list-button home-button hover-orange">
-                        Use List
-                      </button>
-                    </Link>
+                      Save to History
+                    </button>
                   </div>
                 </div>
               );
@@ -321,7 +332,6 @@ export default function RecommendationPage() {
             {/* Target List */}
             {results.targetList.length > 0 && (() => {
               const total = results.targetList.reduce((sum, item) => sum + (item.price || 0), 0);
-              const payload = encodeURIComponent(JSON.stringify(results.targetList));
               return (
                 <div className="shopping-list" style={{ flex: 1 }}>
                   <h3>Target</h3>
@@ -350,17 +360,12 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <Link
-                      href={{
-                        pathname: "/list_gen",
-                        query: { list: payload },
-                      }}
-                      passHref
+                    <button
+                      className="use-list-button home-button hover-orange"
+                      onClick={() => saveShoppingList(results.targetList)}
                     >
-                      <button className="use-list-button home-button hover-orange">
-                        Use List
-                      </button>
-                    </Link>
+                      Save to History
+                    </button>
                   </div>
                 </div>
               );
