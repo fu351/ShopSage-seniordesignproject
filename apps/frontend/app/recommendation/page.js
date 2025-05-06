@@ -5,11 +5,9 @@ import { Trash2 } from "lucide-react";
 import { AuthContext } from "../AuthContext"; // adjust path if needed
 import axios from "axios";
 import config from "../../config";
-import { useRouter } from "next/router"; // Import useRouter for navigation
 
 export default function RecommendationPage() {
   const { user, login, logout } = useContext(AuthContext);
-  const router = useRouter();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -35,14 +33,7 @@ export default function RecommendationPage() {
     newItems.splice(index, 1);
     setGroceryItems(newItems);
   };
-  
-  // Choose list
-  const handleUseList = (retailer) => {
-    // e.g. load that list into the shopping cart, or navigate, etc.
-    console.log("Using list for:", retailer);
-  };
 
-  // Function to update an item value
   const updateItem = (index, value) => {
     const newItems = [...groceryItems];
     newItems[index] = value;
@@ -61,12 +52,10 @@ export default function RecommendationPage() {
       const results = await Promise.all(
         items.map(async (item) => {
           const res = await fetch(
-            // `http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`
             `${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`
           );
           const data = await res.json();
 
-          // Find the cheapest item for each provider
           const cheapest = data.reduce((acc, product) => {
             if (!acc[product.provider] || product.price < acc[product.provider].price) {
               acc[product.provider] = product;
@@ -78,7 +67,6 @@ export default function RecommendationPage() {
         })
       );
 
-      // Organize results into separate lists for each provider
       const lists = { krogerList: [], meijerList: [], targetList: [] };
       results.forEach(({ item, cheapest }) => {
         if (cheapest.Kroger) lists.krogerList.push({ ...cheapest.Kroger, item });
@@ -96,13 +84,12 @@ export default function RecommendationPage() {
 
   const saveShoppingList = async (shoppingList) => {
     try {
-      const token = localStorage.getItem("authToken"); // Consider storing in AuthContext instead
+      const token = localStorage.getItem("authToken");
       if (!token) return alert("You must be logged in to save your list.");
 
-      // Add default quantity of 1 to each item
       const listWithQuantities = shoppingList.map((item) => ({
         ...item,
-        quantity: 1, // Default quantity
+        quantity: 1,
       }));
 
       const response = await fetch(`${config.apiBaseUrl}/saveShoppingList`, {
@@ -123,13 +110,6 @@ export default function RecommendationPage() {
     }
   };
 
-  const useList = (shoppingList) => {
-    if (typeof window !== "undefined") {
-      const encodedList = encodeURIComponent(JSON.stringify(shoppingList));
-      router.push(`/list_gen?list=${encodedList}`);
-    }
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     const { username, password } = e.target;
@@ -140,7 +120,7 @@ export default function RecommendationPage() {
         password: password.value,
       });
 
-      login(response.data.token); // context method
+      login(response.data.token);
       setModalOpen(false);
     } catch (err) {
       alert("Login failed: " + (err.response?.data?.message || "Unknown error"));
@@ -170,7 +150,6 @@ export default function RecommendationPage() {
 
   return (
     <div className="page-container">
-      {/* Header */}
       <header className="header">
         <Link href="/">
           <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
@@ -204,7 +183,6 @@ export default function RecommendationPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="main-content" style={{ justifyContent: "center" }}>
         <div className="shopping-list" style={{ maxWidth: "800px", width: "100%" }}>
           <h2 className="shopping-header">Add Your Grocery Items</h2>
@@ -243,10 +221,8 @@ export default function RecommendationPage() {
             </button>
           </div>
         </div>
-      
       </div>
 
-      {/* Results Grid */}
       {results && (
         <section style={{ marginTop: "30px", maxWidth: "1000px", margin: "0 auto" }}>
           <h2>Shopping Lists by Location</h2>
@@ -260,7 +236,6 @@ export default function RecommendationPage() {
               alignItems: "flex-start",
             }}
           >
-            {/* Kroger List */}
             {results.krogerList.length > 0 && (() => {
               const total = results.krogerList.reduce((sum, item) => sum + (item.price || 0), 0);
               return (
@@ -280,7 +255,6 @@ export default function RecommendationPage() {
                       </div>
                     </div>
                   ))}
-
                   <div
                     className="list-footer"
                     style={{
@@ -291,18 +265,11 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <button
-                      className="use-list-button home-button hover-orange"
-                      onClick={() => useList(results.krogerList)}
-                    >
-                      Use List
-                    </button>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Meijer List */}
             {results.meijerList.length > 0 && (() => {
               const total = results.meijerList.reduce((sum, item) => sum + (item.price || 0), 0);
               return (
@@ -322,7 +289,6 @@ export default function RecommendationPage() {
                       </div>
                     </div>
                   ))}
-
                   <div
                     className="list-footer"
                     style={{
@@ -333,18 +299,11 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <button
-                      className="use-list-button home-button hover-orange"
-                      onClick={() => useList(results.meijerList)}
-                    >
-                      Use List
-                    </button>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Target List */}
             {results.targetList.length > 0 && (() => {
               const total = results.targetList.reduce((sum, item) => sum + (item.price || 0), 0);
               return (
@@ -364,7 +323,6 @@ export default function RecommendationPage() {
                       </div>
                     </div>
                   ))}
-
                   <div
                     className="list-footer"
                     style={{
@@ -375,12 +333,6 @@ export default function RecommendationPage() {
                     }}
                   >
                     <span className="total-price">Total: ${total.toFixed(2)}</span>
-                    <button
-                      className="use-list-button home-button hover-orange"
-                      onClick={() => useList(results.targetList)}
-                    >
-                      Use List
-                    </button>
                   </div>
                 </div>
               );
@@ -388,13 +340,11 @@ export default function RecommendationPage() {
           </div>
         </section>
       )}
-      
 
       <footer className="footer">
         <p>&copy; {new Date().getFullYear()} ShopSage. All rights reserved.</p>
       </footer>
 
-      {/* Auth Modal */}
       {modalOpen && (
         <div className="auth-modal-overlay">
           <div className="auth-modal-container">
