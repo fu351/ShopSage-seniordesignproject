@@ -539,6 +539,7 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 400px;
+  position: relative; /* already applied inline, but safe to reinforce */
 }
 
 .auth-modal-container h2 {
@@ -685,6 +686,12 @@ body {
   padding: 0 !important; /* Override default padding */
   font-size: 1.2rem;
   aspect-ratio: 1/1;
+}
+
+/* Highlight logged-in username */
+.user-button {
+  border: 2px solid var(--dark-brown);
+  border-radius: 0;
 }
 
 /* Other existing styles remain the same */
