@@ -49,28 +49,44 @@ export default function RecommendationPage() {
 
   const generateShoppingList = async () => {
     const items = groceryItems.filter((i) => i.trim());
-    if (!items.length) return alert("Please add at least one item!");
+    if (!items.length) {
+      alert("Please add at least one item to your grocery list!");
+      return;
+    }
 
     setLoadingResults(true);
     try {
-      const results = await Promise.all(items.map(async (item) => {
-        const res = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`);
-        const data = await res.json();
-        return { item, data };
-      }));
+      const results = await Promise.all(
+        items.map(async (item) => {
+          const res = await fetch(
+            // `http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`
+            `${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(item)}`
+          );
+          const data = await res.json();
 
+          // Find the cheapest item for each provider
+          const cheapest = data.reduce((acc, product) => {
+            if (!acc[product.provider] || product.price < acc[product.provider].price) {
+              acc[product.provider] = product;
+            }
+            return acc;
+          }, {});
+
+          return { item, cheapest };
+        })
+      );
+
+      // Organize results into separate lists for each provider
       const lists = { krogerList: [], meijerList: [], targetList: [] };
-      results.forEach(({ data }) => {
-        data.forEach(product => {
-          if (product.provider === "Kroger") lists.krogerList.push(product);
-          if (product.provider === "Meijer") lists.meijerList.push(product);
-          if (product.provider === "Target") lists.targetList.push(product);
-        });
+      results.forEach(({ item, cheapest }) => {
+        if (cheapest.Kroger) lists.krogerList.push({ ...cheapest.Kroger, item });
+        if (cheapest.Meijer) lists.meijerList.push({ ...cheapest.Meijer, item });
+        if (cheapest.Target) lists.targetList.push({ ...cheapest.Target, item });
       });
 
       setResults(lists);
     } catch (error) {
-      console.error("Error generating list:", error);
+      console.error("Error generating shopping list:", error);
     } finally {
       setLoadingResults(false);
     }
