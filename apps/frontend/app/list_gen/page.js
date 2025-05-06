@@ -10,9 +10,17 @@ export default function Home() {
   const [lastSearch, setLastSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shoppingHistory, setShoppingHistory] = useState([]);
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false); // Corrected to execute the function
+  const [authMode, setAuthMode] = useState("");
 
   useEffect(() => {
-    fetchShoppingHistory
+    // Check if user is logged in before fetching history
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      fetchShoppingHistory();
+    }
   }, []);
 
   const handleQuantityChange = (id, newQuantity) => {
@@ -33,8 +41,8 @@ export default function Home() {
     if (query.trim() !== "") {
       setIsLoading(true);
       try {
-        //const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
-        const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        const response = await fetch(`http://localhost:5000/api/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
+        // const response = await fetch(`${config.apiBaseUrl}/getAllProducts?zipCode=47906&searchTerm=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
@@ -110,7 +118,7 @@ export default function Home() {
   const fetchShoppingHistory = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      alert("You must be logged in to view your shopping history.");
+      // Silently handle this case without alert since we're checking above
       return;
     }
   
@@ -139,13 +147,84 @@ export default function Home() {
     setShoppingList((prevList) => prevList.filter((item) => item.id !== id));
   };
 
+  // Handlers for authentication
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setUser({ username: e.target.username.value });
+    setModalOpen(false);
+  };
+
+  const handleSignup = (e) => {
+    e.preventDefault();
+    const { username, password, confirmPassword } = e.target;
+    if (password.value !== confirmPassword.value) {
+      alert("Passwords do not match!");
+      return;
+    }
+    setUser({ username: username.value });
+    setModalOpen(false);
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    setShowDropdown(false);
+    localStorage.removeItem("authToken");
+  };
+
   return (
     <div className="page-container">
       {/* Header with Logo */}
       <header className="header">
-        <Link href="..">
-        <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
+        <Link href="/">
+          <img src="/logo.png" alt="ShopSage Logo" className="logo-centered" />
         </Link>
+        
+        {/* Authentication Controls */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <Link href="/recommendation">
+            <button className="home-nav-button sign-in-btn">Generate Shopping List</button>
+          </Link>
+          
+          {!user ? (
+            <button
+              className="home-nav-button sign-in-btn"
+              onClick={() => {
+                setModalOpen(true);
+                setAuthMode("login");
+              }}
+            >
+              Sign In
+            </button>
+          ) : (
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <button
+                className="home-nav-button"
+                onClick={() => setShowDropdown((prev) => !prev)}
+              >
+                {user.username}
+              </button>
+              {showDropdown && (
+                <div className="auth-dropdown">
+                  <Link href="/preferences">
+                    <div className="dropdown-item">Preferences</div>
+                  </Link>
+                  <Link href="/history">
+                    <div className="dropdown-item">View History</div>
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSignOut();
+                    }}
+                    className="dropdown-item"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Main Content */}
@@ -341,6 +420,68 @@ export default function Home() {
           })()}
         </section>
       </main>
+
+      {/* Login/Signup Modal */}
+      {modalOpen && (
+        <div className="auth-modal-overlay">
+          <div className="auth-modal-container">
+            {authMode === "signup" && (
+              <button onClick={() => setAuthMode("login")} className="auth-modal-back">
+                &larr; Back
+              </button>
+            )}
+            {authMode === "login" ? (
+              <>
+                <h2>Sign In</h2>
+                <form onSubmit={handleLogin}>
+                  <div>
+                    <label>Username:</label>
+                    <input type="text" name="username" required />
+                  </div>
+                  <div>
+                    <label>Password:</label>
+                    <input type="password" name="password" required />
+                  </div>
+                  <div className="modal-buttons">
+                    <button type="submit" className="home-button secondary">Login</button>
+                    <button
+                      type="button"
+                      className="home-button secondary"
+                      onClick={() => setAuthMode("signup")}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2>Sign Up</h2>
+                <form onSubmit={handleSignup}>
+                  <div>
+                    <label>Username:</label>
+                    <input type="text" name="username" required />
+                  </div>
+                  <div>
+                    <label>Password:</label>
+                    <input type="password" name="password" required />
+                  </div>
+                  <div>
+                    <label>Retype Password:</label>
+                    <input type="password" name="confirmPassword" required />
+                  </div>
+                  <div className="modal-buttons">
+                    <button type="submit" className="home-button secondary">Sign Up</button>
+                  </div>
+                </form>
+              </>
+            )}
+            <button onClick={() => setModalOpen(false)} className="auth-modal-close">
+              X
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
