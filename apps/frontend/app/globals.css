@@ -71,24 +71,38 @@ body {
   background-color: var(--dark-brown);
 }
 
+/* Shared styles for home buttons */
+.home-button.secondary,
+.home-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 40px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* Specific styles for .home-button.secondary */
 .home-button.secondary {
   background-color: var(--accent-orange);
+  color: white;
+  border: none;
 }
 
 .home-button.secondary:hover {
   background-color: #e76f51;
 }
 
-/* Navigation Button in Grocery List Builder */
+/* Specific styles for .home-nav-button */
 .home-nav-button {
   background-color: var(--primary-green);
   color: white;
-  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .home-nav-button:hover {
