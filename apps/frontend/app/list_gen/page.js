@@ -198,7 +198,7 @@ export default function Home() {
           ) : (
             <div style={{ position: "relative", display: "inline-block" }}>
               <button
-                className="home-nav-button"
+                className="home-nav-button user-button"
                 onClick={() => setShowDropdown((prev) => !prev)}
               >
                 {user.username}
@@ -424,7 +424,10 @@ export default function Home() {
       {/* Login/Signup Modal */}
       {modalOpen && (
         <div className="auth-modal-overlay">
-          <div className="auth-modal-container">
+          <div className="auth-modal-container" style={{ position: "relative" }}>
+            <button onClick={() => setModalOpen(false)} className="auth-modal-close">
+              X
+            </button>
             {authMode === "signup" && (
               <button onClick={() => setAuthMode("login")} className="auth-modal-back">
                 &larr; Back
@@ -476,9 +479,6 @@ export default function Home() {
                 </form>
               </>
             )}
-            <button onClick={() => setModalOpen(false)} className="auth-modal-close">
-              X
-            </button>
           </div>
         </div>
       )}

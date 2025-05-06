@@ -12,6 +12,8 @@ export default function RecommendationPage() {
   
   // New state for grocery items - initialize with 5 empty fields
   const [groceryItems, setGroceryItems] = useState(["", "", "", "", ""]);
+  const [results, setResults] = useState([]);           // new
+  const [loadingResults, setLoadingResults] = useState(false); // new
 
   // Function to add a new item field
   const addItemField = () => {
@@ -34,15 +36,29 @@ export default function RecommendationPage() {
   };
 
   // Function to handle generating shopping list
-  const generateShoppingList = () => {
-    // Filter out empty items
-    const items = groceryItems.filter(item => item.trim() !== "");
-    if (items.length === 0) {
+  const generateShoppingList = async () => {
+    const items = groceryItems.filter(i => i.trim());
+    if (!items.length) {
       alert("Please add at least one item to your grocery list!");
       return;
     }
-    console.log("Generating shopping list with items:", items);
-    // Here you would implement the logic to generate the shopping list
+
+    setLoadingResults(true);
+    const promises = items.map(async item => {
+      const [k, s, m] = await Promise.all([
+        fetch(`/api/kroger?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
+          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
+        fetch(`/api/samsclub?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
+          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
+        fetch(`/api/meijer?zipCode=47906&searchTerm=${encodeURIComponent(item)}`)
+          .then(r => r.json()).then(arr => arr.sort((a,b)=> (a.price||Infinity)-(b.price||Infinity))[0] || null),
+      ]);
+      return { item, kroger: k, sams: s, meijer: m };
+    });
+
+    const res = await Promise.all(promises);
+    setResults(res);
+    setLoadingResults(false);
   };
 
   // Dummy handlers: replace with your actual API calls
@@ -191,10 +207,49 @@ export default function RecommendationPage() {
               onClick={generateShoppingList}
               style={{ width: "50%" }}
             >
-              Generate Shopping List
+              {loadingResults ? "Loading…" : "Generate Shopping List"}
             </button>
           </div>
         </div>
+
+        {/* Results Grid */}
+        {results.length > 0 && (
+          <section style={{ marginTop: "30px" }}>
+            <h2>Cheapest Options</h2>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr",
+              gap: "16px",
+              alignItems: "start"
+            }}>
+              <div><strong>Item</strong></div>
+              <div><strong>Kroger</strong></div>
+              <div><strong>Sam’s Club</strong></div>
+              <div><strong>Meijer</strong></div>
+
+              {results.map(({ item, kroger, sams, meijer }) => (
+                <React.Fragment key={item}>
+                  <div>{item}</div>
+                  <div>
+                    {kroger 
+                      ? `${kroger.name} — $${kroger.price.toFixed(2)}`
+                      : "N/A"}
+                  </div>
+                  <div>
+                    {sams 
+                      ? `${sams.name} — $${sams.price.toFixed(2)}`
+                      : "N/A"}
+                  </div>
+                  <div>
+                    {meijer 
+                      ? `${meijer.name} — $${meijer.price.toFixed(2)}`
+                      : "N/A"}
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Footer */}
