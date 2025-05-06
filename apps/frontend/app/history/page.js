@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import config from "../../config";
 import { AuthContext } from "../AuthContext"; // Adjust the path if needed
+import Header from "../Header"; // Import the Header component
 
 export default function ShoppingHistory() {
   const { user } = useContext(AuthContext);
@@ -42,6 +43,7 @@ export default function ShoppingHistory() {
   if (isLoading) {
     return (
       <div className="history-container">
+        <Header />
         <h1>Shopping History</h1>
         <p>Loading...</p>
       </div>
@@ -51,6 +53,7 @@ export default function ShoppingHistory() {
   if (!user) {
     return (
       <div className="history-container">
+        <Header />
         <h1>Shopping History</h1>
         <p>You must be signed in to view your shopping history.</p>
       </div>
@@ -59,6 +62,7 @@ export default function ShoppingHistory() {
 
   return (
     <div className="history-container">
+      <Header />
       <h1>Shopping History</h1>
       {shoppingHistory.length === 0 ? (
         <p>No shopping history available.</p>

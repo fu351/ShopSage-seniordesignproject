@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import config from "../../config";
 import { AuthContext } from "../AuthContext"; // Adjust if needed
+import Header from "../Header"; // Import the Header component
 
 export default function PreferencesPage() {
   const { user } = useContext(AuthContext); // Use shared auth context
@@ -80,6 +81,7 @@ export default function PreferencesPage() {
   if (!user) {
     return (
       <div className="preferences-container">
+        <Header />
         <h1>Allergen Preferences</h1>
         <p>You must be signed in to view and save preferences.</p>
       </div>
@@ -88,6 +90,7 @@ export default function PreferencesPage() {
 
   return (
     <div className="preferences-container">
+      <Header />
       <h1>Allergen Preferences</h1>
       <p>Select the allergens you want to avoid:</p>
       <div className="allergen-list">
