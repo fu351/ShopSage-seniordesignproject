@@ -122,6 +122,13 @@ body {
   background-color: var(--accent-orange) !important;
 }
 
+.retailer-lists {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: flex-start;  
+}
+
 /* Update remove-button hover style */
 .remove-button.hover-orange:hover {
   color: var(--accent-orange);

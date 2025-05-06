@@ -50,6 +50,12 @@ export default function RecommendationPage() {
     newItems.splice(index, 1);
     setGroceryItems(newItems);
   };
+  
+  // Choose list
+  const handleUseList = (retailer) => {
+    // e.g. load that list into the shopping cart, or navigate, etc.
+    console.log("Using list for:", retailer);
+  };
 
   // Function to update an item value
   const updateItem = (index, value) => {
@@ -249,77 +255,170 @@ export default function RecommendationPage() {
             </button>
           </div>
         </div>
+      
+      </div>
 
-        {/* Results Grid */}
-        {results && (
-          <section style={{ marginTop: "30px" }}>
-            <h2>Shopping Lists by Location</h2>
+      {/* Results Grid */}
+      {results && (
+        <section style={{ marginTop: "30px", maxWidth: "1000px", margin: "0 auto" }}>
+          <h2>Shopping Lists by Location</h2>
 
+          <div
+            className="retailer-lists"
+            style={{
+              display: "flex",
+              gap: "20px",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             {/* Kroger List */}
-            {results.krogerList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Kroger</h3>
-                {results.krogerList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
+            {results.krogerList.length > 0 && (() => {
+              const total = results.krogerList.reduce((sum, item) => sum + (item.price || 0), 0);
+              const payload = encodeURIComponent(JSON.stringify(results.krogerList));
+              return (
+                <div className="shopping-list" style={{ flex: 1 }}>
+                  <h3>Kroger</h3>
+                  {results.krogerList.map((item) => (
+                    <div key={item.id} className="shopping-item">
+                      <div className="image-placeholder">
+                        {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                      </div>
+                      <div className="item-details">
+                        <span className="item-name">{item.name}</span>
+                        <div className="price-quantity">
+                          <span className="price">${item.price.toFixed(2)}</span>
+                          <span className="item-location">{item.location}</span>
+                        </div>
                       </div>
                     </div>
+                  ))}
+
+                  <div
+                    className="list-footer"
+                    style={{
+                      marginTop: "12px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span className="total-price">Total: ${total.toFixed(2)}</span>
+                    <Link
+                      href={{
+                        pathname: "/list_gen",
+                        query: { list: payload },
+                      }}
+                      passHref
+                    >
+                      <button className="use-list-button home-button hover-orange">
+                        Use List
+                      </button>
+                    </Link>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })()}
 
             {/* Meijer List */}
-            {results.meijerList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Meijer</h3>
-                {results.meijerList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
+            {results.meijerList.length > 0 && (() => {
+              const total = results.meijerList.reduce((sum, item) => sum + (item.price || 0), 0);
+              const payload = encodeURIComponent(JSON.stringify(results.meijerList));
+              return (
+                <div className="shopping-list" style={{ flex: 1 }}>
+                  <h3>Meijer</h3>
+                  {results.meijerList.map((item) => (
+                    <div key={item.id} className="shopping-item">
+                      <div className="image-placeholder">
+                        {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                      </div>
+                      <div className="item-details">
+                        <span className="item-name">{item.name}</span>
+                        <div className="price-quantity">
+                          <span className="price">${item.price.toFixed(2)}</span>
+                          <span className="item-location">{item.location}</span>
+                        </div>
                       </div>
                     </div>
+                  ))}
+
+                  <div
+                    className="list-footer"
+                    style={{
+                      marginTop: "12px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span className="total-price">Total: ${total.toFixed(2)}</span>
+                    <Link
+                      href={{
+                        pathname: "/list_gen",
+                        query: { list: payload },
+                      }}
+                      passHref
+                    >
+                      <button className="use-list-button home-button hover-orange">
+                        Use List
+                      </button>
+                    </Link>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })()}
 
             {/* Target List */}
-            {results.targetList.length > 0 && (
-              <div className="shopping-list">
-                <h3>Target</h3>
-                {results.targetList.map((item) => (
-                  <div key={item.id} className="shopping-item">
-                    <div className="image-placeholder">
-                      {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
-                    </div>
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <div className="price-quantity">
-                        <span className="price">${item.price}</span>
-                        <span className="item-location">{item.location}</span>
+            {results.targetList.length > 0 && (() => {
+              const total = results.targetList.reduce((sum, item) => sum + (item.price || 0), 0);
+              const payload = encodeURIComponent(JSON.stringify(results.targetList));
+              return (
+                <div className="shopping-list" style={{ flex: 1 }}>
+                  <h3>Target</h3>
+                  {results.targetList.map((item) => (
+                    <div key={item.id} className="shopping-item">
+                      <div className="image-placeholder">
+                        {item.image_url && <img src={item.image_url} alt="Product Thumbnail" />}
+                      </div>
+                      <div className="item-details">
+                        <span className="item-name">{item.name}</span>
+                        <div className="price-quantity">
+                          <span className="price">${item.price.toFixed(2)}</span>
+                          <span className="item-location">{item.location}</span>
+                        </div>
                       </div>
                     </div>
+                  ))}
+
+                  <div
+                    className="list-footer"
+                    style={{
+                      marginTop: "12px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span className="total-price">Total: ${total.toFixed(2)}</span>
+                    <Link
+                      href={{
+                        pathname: "/list_gen",
+                        query: { list: payload },
+                      }}
+                      passHref
+                    >
+                      <button className="use-list-button home-button hover-orange">
+                        Use List
+                      </button>
+                    </Link>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-      </div>
+                </div>
+              );
+            })()}
+          </div>
+        </section>
+      )}
+      
 
       {/* Footer */}
       <footer className="footer">
