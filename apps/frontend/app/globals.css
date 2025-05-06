@@ -37,23 +37,95 @@ body {
 /* Header */
 .header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   height: 80px;
   background-color: var(--primary-green);
   color: #fff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
 }
 
 .logo-centered {
   height: 50px;
-  margin-right: 16px;
+  cursor: pointer;
 }
 
 .title-text {
-  font-family: var(--heading-font);
-  font-size: 1.8rem;
-  font-weight: bold;
+  display: none;
+}
+
+/* Home button styling */
+.home-button {
+  background-color: var(--primary-green);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: var(--dark-brown);
+}
+
+.home-button.secondary {
+  background-color: var(--accent-orange);
+}
+
+.home-button.secondary:hover {
+  background-color: #e76f51;
+}
+
+/* Navigation Button in Grocery List Builder */
+.home-nav-button {
+  background-color: var(--primary-green);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.home-nav-button:hover {
+  background-color: var(--dark-brown);
+}
+
+/* Sign-in button with square background */
+.sign-in-btn {
+  background-color: var(--accent-orange);
+  border-radius: 4px;
+}
+
+.sign-in-btn:hover {
+  background-color: #e76f51;
+}
+
+/* Button Colors - updating hover states */
+.add-button:hover,
+.reload-button:hover,
+.view-similar:hover {
+  background-color: var(--dark-brown);
+}
+
+.remove-button:hover {
+  color: var(--dark-brown);
+  background-color: #fed7d7;
+}
+
+/* Add hover-orange utility class */
+.hover-orange:hover {
+  background-color: var(--accent-orange) !important;
+}
+
+/* Update remove-button hover style */
+.remove-button.hover-orange:hover {
+  color: var(--accent-orange);
+  background-color: #fed7d7;
 }
 
 /* Main Content Area */
@@ -189,20 +261,9 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.add-button:hover,
-.reload-button:hover,
-.view-similar:hover {
-  background-color: #e76f51; /* Darker orange on hover */
-}
-
 .remove-button {
   background: transparent;
   color: var(--accent-orange);
-}
-
-.remove-button:hover {
-  color: #e76f51;
-  background-color: #fed7d7; /* Light red background on hover */
 }
 
 /* Shopping List */
@@ -309,20 +370,11 @@ body {
   color: #fff;
 }
 
-.view-similar:hover {
-  background-color: #e76f51;
-}
-
 .remove-button {
   background: transparent;
   color: var(--accent-orange);
   border: none;
   cursor: pointer;
-}
-
-.remove-button:hover {
-  color: #e76f51;
-  background-color: #fed7d7;
 }
 
 .add-button.disabled {
@@ -443,21 +495,6 @@ body {
   color: var(--primary-green);
 }
 
-.home-nav-button {
-  background-color: var(--primary-green);
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.home-nav-button:hover {
-  background-color: #7aa77a;
-}
-
 .home-main {
   text-align: center;
   max-width: 600px;
@@ -475,49 +512,10 @@ body {
   justify-content: center;
 }
 
-.home-button {
-  background-color: var(--primary-green);
-  color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.home-button:hover {
-  background-color: #7aa77a;
-}
-
-.home-button.secondary {
-  background-color: var(--accent-orange);
-}
-
-.home-button.secondary:hover {
-  background-color: #e76f51;
-}
-
 .home-footer {
   margin-top: 32px;
   font-size: 0.9rem;
   color: var(--dark-brown);
-}
-
-/* Navigation Button in Grocery List Builder */
-.home-nav-button {
-  background-color: var(--primary-green);
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.home-nav-button:hover {
-  background-color: #7aa77a;
 }
 
 /* Login Modal */
@@ -668,3 +666,25 @@ body {
 .history-item li {
   margin-bottom: 5px;
 }
+
+/* Grocery item input styles */
+.grocery-button-container {
+  display: flex;
+  gap: 5px;
+  min-width: 80px; /* Fixed width for button container */
+  justify-content: flex-end; /* Align buttons to the right */
+  margin-left: 10px; /* Add space between input and buttons */
+}
+
+.square-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important; /* Override default padding */
+  font-size: 1.2rem;
+  aspect-ratio: 1/1;
+}
+
+/* Other existing styles remain the same */
